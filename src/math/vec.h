@@ -34,9 +34,9 @@ void print_v4(v4 v);
  * @brief Vector compares
  */
 
-b8 v2_eq(v2 a, v2 b);
-b8 v3_eq(v3 a, v3 b);
-b8 v4_eq(v4 a, v4 b);
+b32 v2_eq(v2 a, v2 b);
+b32 v3_eq(v3 a, v3 b);
+b32 v4_eq(v4 a, v4 b);
 
 /*
  * @brief Vector arithematics

@@ -12,7 +12,7 @@
 #define rand_init(seed) srand(seed)
 #define rand_range(l, u) rand() % (u - l + 1) + l
 
-static b8 f32_eq(f32 a, f32 b) {
+static b32 f32_eq(f32 a, f32 b) {
 	return fabs(a - b) < 0.01f;
 }
 

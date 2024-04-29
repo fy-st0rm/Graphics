@@ -39,13 +39,10 @@ typedef double f64;
 
 // Boolean types
 
-/** @brief 8-bit boolean type */
-typedef enum : signed char {
-	false, true
-} b8;
-
 /** @brief 32-bit boolean type, used for APIs which require it */
-typedef i32 b32;
+typedef enum {
+	false, true
+} b32;
 
 /* @brief Macro to check if the variable is pointer or not. */
 #define __INTERNAL_CHECK_POINTER(x) _Generic((x),\
@@ -76,7 +73,6 @@ DECLARE_RESULT(i64, i64);
 DECLARE_RESULT(f32, f32);
 DECLARE_RESULT(f64, f64);
 
-DECLARE_RESULT(b8, b8);
 DECLARE_RESULT(b32, b32);
 
 #endif // __DEFINES_H__

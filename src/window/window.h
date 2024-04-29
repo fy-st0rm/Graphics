@@ -9,7 +9,7 @@
 typedef struct {
 	GLFWwindow* glfw_window;
 	u32 width, height;
-	b8 should_close;
+	b32 should_close;
 } Window;
 
 DECLARE_RESULT(Window, Window);

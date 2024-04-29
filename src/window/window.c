@@ -20,7 +20,7 @@ Result_Window window_new(const char* title, u32 width, u32 height) {
 	if (glewInit() != GLEW_OK)
 		return Result_Window_err("Failed to initialize glew");
 
-	b8 should_close = glfwWindowShouldClose(glfw_window);
+	b32 should_close = glfwWindowShouldClose(glfw_window);
 
 	return Result_Window_ok((Window) {
 		.glfw_window = glfw_window,
