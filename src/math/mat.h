@@ -13,6 +13,7 @@ void m4_clear(m4* m);
 m4 m4_mul(m4 m1, m4 m2);
 v3 m4_mul_v3(m4 m, v3 v);
 m4 m4_identity();
+m4 m4_zero();
 m4 m4_inverse(m4 in);
 m4 m4_translate(m4 m, v3 v);
 m4 m4_transpose(m4 m);

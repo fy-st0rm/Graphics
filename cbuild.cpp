@@ -27,6 +27,7 @@ int main(int argc, char** argv) {
 			"src/graphics/shader.c",
 			"src/graphics/texture.c",
 			"src/graphics/imr.c",
+			"src/camera/camera.c",
 			"src/window/window.c",
 			"src/main.c",
 		})

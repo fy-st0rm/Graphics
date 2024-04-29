@@ -39,6 +39,7 @@ Result_IMR imr_new();
 void imr_delete(IMR* imr);
 void imr_begin(IMR* imr);
 void imr_end(IMR* imr);
+void imr_update_mvp(IMR* imr, m4 mvp);
 void imr_push_vertex(IMR* imr, Vertex v);
 void imr_push_quad(IMR* imr, v2 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot, v4 color);
 void imr_push_triangle(IMR* imr, v2 p1, v2 p2, v2 p3, m4 rot, v4 color);

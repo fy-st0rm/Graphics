@@ -8,7 +8,7 @@ const char* v_src =
 	"layout (location = 1) in vec4 color;\n"
 	"layout (location = 2) in vec2 tex_coord;\n"
 	"layout (location = 3) in float tex_id;\n"
-	//"uniform mat4 mvp;\n"
+	"uniform mat4 mvp;\n"
 	"out vec4 o_color;\n"
 	"out vec2 o_tex_coord;\n"
 	"out float o_tex_id;\n"
@@ -16,7 +16,7 @@ const char* v_src =
 	"o_color = color;\n"
 	"o_tex_coord = tex_coord;\n"
 	"o_tex_id = tex_id;\n"
-	"gl_Position = vec4(position, 1.0f);\n"
+	"gl_Position = mvp * vec4(position, 1.0f);\n"
 	"}\n";
 
 const char* f_src =
@@ -115,6 +115,11 @@ void imr_end(IMR* imr) {
 
 	GLCall(glBindVertexArray(imr->vao));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, imr->buff_idx / VERTEX_SIZE));
+}
+
+void imr_update_mvp(IMR* imr, m4 mvp) {
+	i32 loc = GLCall(glGetUniformLocation(imr->shader, "mvp"));
+	GLCall(glUniformMatrix4fv(loc, 1, GL_TRUE, &mvp.m[0][0]));
 }
 
 void imr_push_vertex(IMR* imr, Vertex v) {

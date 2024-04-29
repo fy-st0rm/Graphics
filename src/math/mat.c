@@ -54,6 +54,17 @@ m4 m4_identity() {
 	};
 }
 
+m4 m4_zero() {
+	return (m4) {
+		.m = {
+			{ 0.0f, 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f, 0.0f },
+			{ 0.0f, 0.0f, 0.0f, 0.0f }
+		}
+	};
+}
+
 m4 m4_inverse(m4 in) {
 	m4 out;
 	m4_clear(&out);
