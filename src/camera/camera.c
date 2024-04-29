@@ -1,10 +1,31 @@
 #include "camera.h"
 
-OCamera ocamera_new(v2 pos, OCamera_Boundary boundary) {
+OCamera ocamera_new(v2 pos, f32 zoom, OCamera_Boundary boundary) {
 	return (OCamera) {
 		.pos = pos,
+		.zoom = zoom,
 		.mvp = m4_zero(),
-		.boundary = boundary
+		.org_b = boundary,
+		.boundary = (OCamera_Boundary) {
+			boundary.left / zoom,
+			boundary.right / zoom,
+			boundary.top / zoom,
+			boundary.bottom / zoom,
+			boundary.near,
+			boundary.far
+		}
+	};
+}
+
+void ocamera_change_zoom(OCamera* cam, f32 dz) {
+	cam->zoom += dz;
+	cam->boundary = (OCamera_Boundary) {
+		cam->org_b.left   / cam->zoom,
+		cam->org_b.right  / cam->zoom,
+		cam->org_b.top    / cam->zoom,
+		cam->org_b.bottom / cam->zoom,
+		cam->org_b.near,
+		cam->org_b.far
 	};
 }
 

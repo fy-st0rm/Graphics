@@ -37,7 +37,12 @@ const TileType map[ROW][COL] = {
 int main(int argc, char** argv) {
 	Window window = Result_Window_unwrap(window_new("Game", WIN_WIDTH, WIN_HEIGHT));
 	IMR imr = Result_IMR_unwrap(imr_new());
-	f32 zoom = 2.1f;
+	OCamera cam = ocamera_new(
+		(v2) { 0, 0 },
+		2.0f,
+		(OCamera_Boundary) { 0, WIN_WIDTH, WIN_HEIGHT, 0, -1, 1000 }
+	);
+
 	Texture tex = Result_Texture_unwrap(texture_from_file("assets/sprites.png"));
 	texture_bind(tex);
 
@@ -47,20 +52,15 @@ int main(int argc, char** argv) {
 	};
 
 	while (!window.should_close) {
-		OCamera cam = ocamera_new(
-			(v2) { 0, 0 },
-			(OCamera_Boundary) { 0 / zoom, WIN_WIDTH / zoom, WIN_HEIGHT / zoom, 0 / zoom, -1, 1000 }
-		);
-
 		Event event;
 		while(event_poll(window, &event)) {
 			if (event.type == KEYDOWN) {
 				switch (event.key) {
 					case GLFW_KEY_EQUAL:
-						zoom += 0.1;
+						ocamera_change_zoom(&cam, 0.1);
 						break;
 					case GLFW_KEY_MINUS:
-						zoom -= 0.1;
+						ocamera_change_zoom(&cam, -0.1);
 						break;
 				}
 			}
