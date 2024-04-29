@@ -37,6 +37,7 @@ DECLARE_RESULT(IMR, IMR);
 
 Result_IMR imr_new();
 void imr_delete(IMR* imr);
+void imr_clear(v4 color);
 void imr_begin(IMR* imr);
 void imr_end(IMR* imr);
 void imr_update_mvp(IMR* imr, m4 mvp);

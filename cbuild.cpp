@@ -6,6 +6,7 @@ int main(int argc, char** argv) {
 	CBuild cbuild("gcc");
 	cbuild
 		.out("bin", "game")
+		.flags({"-std=gnu17"})
 		.inc_paths({
 			"src/",
 			"src/external/glew/include/",
@@ -27,6 +28,7 @@ int main(int argc, char** argv) {
 			"src/graphics/shader.c",
 			"src/graphics/texture.c",
 			"src/graphics/imr.c",
+			"src/event/event.c",
 			"src/camera/camera.c",
 			"src/window/window.c",
 			"src/main.c",

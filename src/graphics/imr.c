@@ -102,6 +102,11 @@ void imr_delete(IMR* imr) {
 	shader_delete(imr->shader);
 }
 
+void imr_clear(v4 color) {
+	GLCall(glClearColor(color.r, color.g, color.b, color.a));
+	GLCall(glClear(GL_COLOR_BUFFER_BIT));
+}
+
 void imr_begin(IMR* imr) {
 	imr->buff_idx = 0;
 	texture_bind(imr->white);
