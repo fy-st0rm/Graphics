@@ -4,7 +4,7 @@ static Dyn_Array(Event) events = NULL;
 
 void key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
 	Event event = { 0 };
-	event.key = key;
+	event.e.key = key;
 	switch (action) {
 		case GLFW_PRESS:
 		case GLFW_REPEAT:
@@ -23,10 +23,10 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 
 	switch (button) {
 		case GLFW_MOUSE_BUTTON_LEFT:
-			event.button = MOUSE_BUTTON_LEFT;
+			event.e.button = MOUSE_BUTTON_LEFT;
 			break;
 		case GLFW_MOUSE_BUTTON_RIGHT:
-			event.button = MOUSE_BUTTON_RIGHT;
+			event.e.button = MOUSE_BUTTON_RIGHT;
 			break;
 		default:
 			assert(0, "Unhandled mouse button: %d\n", button);
@@ -46,12 +46,28 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 	dyn_array_append(events, event);
 }
 
+void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
+	Event event = { 0 };
+	event.e.mouse_pos = (v2) { xpos, ypos };
+	event.type = MOUSE_MOTION;
+	dyn_array_append(events, event);
+}
+
 i32 event_poll(Window window, Event* event) {
 	glfwSetKeyCallback(window.glfw_window, key_callback);
 	glfwSetMouseButtonCallback(window.glfw_window, mouse_button_callback);
+	glfwSetCursorPosCallback(window.glfw_window, cursor_position_callback);
 
 	i32 len = dyn_array_len(events);
 	if (len)
 		*event = dyn_array_pop(events, 0);
 	return len;
+}
+
+v2 event_mouse_pos(Window window) {
+	f64 xpos, ypos;
+	glfwGetCursorPos(window.glfw_window, &xpos, &ypos);
+	return (v2) {
+		xpos, ypos
+	};
 }

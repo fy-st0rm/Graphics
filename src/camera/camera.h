@@ -18,6 +18,7 @@ typedef struct {
 
 OCamera ocamera_new(v2 pos, f32 zoom, OCamera_Boundary boundary);
 void ocamera_change_zoom(OCamera* cam, f32 dz);
+void ocamera_change_pos(OCamera* cam, v2 dp);
 m4 ocamera_calc_mvp(OCamera* cam);
 
 #endif // __CAMERA_H__

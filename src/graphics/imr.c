@@ -191,7 +191,6 @@ void imr_push_quad(IMR* imr, v2 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot,
 }
 
 void imr_push_triangle(IMR* imr, v2 p1, v2 p2, v2 p3, m4 rot, v4 color) {
-	assert(0, "Havent implemented texture support yet.");
 	if (((imr->buff_idx + 3 * VERTEX_SIZE) / VERTEX_SIZE) >= MAX_VERT_CNT) {
 		imr_end(imr);
 		imr_begin(imr);
@@ -214,7 +213,13 @@ void imr_push_triangle(IMR* imr, v2 p1, v2 p2, v2 p3, m4 rot, v4 color) {
 	a2.pos = v3_add(a2.pos, (v3) { centroid.x, centroid.y, 0.0f });
 	a3.pos = v3_add(a3.pos, (v3) { centroid.x, centroid.y, 0.0f });
 
+	// Texture coordinates
+	a1.tex_coord = (v2) { 0, 0 };
+	a2.tex_coord = (v2) { 1, 0 };
+	a3.tex_coord = (v2) { 1, 1 };
+
 	a1.color = a2.color = a3.color = color;
+	a1.tex_id = a2.tex_id = a3.tex_id = imr->white.id;
 
 	imr_push_vertex(imr, a1);
 	imr_push_vertex(imr, a2);

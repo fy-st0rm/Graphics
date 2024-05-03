@@ -12,7 +12,7 @@ DECLARE_RESULT(Texture, Texture);
 
 // TODO: Implement control over texture filters
 // Filters are hard coded for now
-Result_Texture texture_from_file(const char* filepath);
+Result_Texture texture_from_file(const char* filepath, b32 flip);
 Result_Texture texture_from_data(u32 width, u32 height, u32* data);
 void texture_bind(Texture texture);
 void texture_unbind(Texture texture);

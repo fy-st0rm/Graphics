@@ -5,8 +5,8 @@
 
 DEFINE_RESULT(Texture, Texture);
 
-Result_Texture texture_from_file(const char* filepath) {
-	stbi_set_flip_vertically_on_load(1);
+Result_Texture texture_from_file(const char* filepath, b32 flip) {
+	stbi_set_flip_vertically_on_load(flip);
 
 	i32 w, h, c;
 	u8* data = stbi_load(filepath, &w, &h, &c, 0);

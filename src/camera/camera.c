@@ -29,6 +29,10 @@ void ocamera_change_zoom(OCamera* cam, f32 dz) {
 	};
 }
 
+void ocamera_change_pos(OCamera* cam, v2 dp) {
+	cam->pos = v2_add(cam->pos, dp);
+}
+
 m4 ocamera_calc_mvp(OCamera* cam) {
 	m4 proj = ortho_projection(
 		cam->boundary.left,

@@ -22,6 +22,7 @@
 #endif
 
 
+#undef assert
 #define assert(x, ...) \
 	do {\
 		if (!(x)) {\
