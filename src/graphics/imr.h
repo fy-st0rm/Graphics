@@ -17,6 +17,10 @@ typedef struct {
 	f32 tex_id;
 } Vertex;
 
+typedef struct {
+	v3 a, b, c;
+} Triangle;
+
 #define TEXTURE_SAMPLE_AMT 32
 #define VERTEX_SIZE   10
 #define MAX_VERT_CNT  10000
@@ -42,7 +46,9 @@ void imr_begin(IMR* imr);
 void imr_end(IMR* imr);
 void imr_update_mvp(IMR* imr, m4 mvp);
 void imr_push_vertex(IMR* imr, Vertex v);
-void imr_push_quad(IMR* imr, v2 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot, v4 color);
-void imr_push_triangle(IMR* imr, v2 p1, v2 p2, v2 p3, m4 rot, v4 color);
+void imr_push_quad(IMR* imr, v3 pos, v2 size, m4 rot, v4 color);
+void imr_push_quad_tex(IMR* imr, v3 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot, v4 color);
+void imr_push_triangle(IMR* imr, v3 p1, v3 p2, v3 p3, m4 rot, v4 color);
+void imr_push_triangle_tex(IMR* imr, v3 p1, v3 p2, v3 p3, Triangle tex_coord, f32 tex_id, m4 rot, v4 color);
 
 #endif // __IMR_H__

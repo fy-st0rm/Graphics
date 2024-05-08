@@ -43,20 +43,6 @@ f32 area(v2 a, v2 b, v2 c) {
 	);
 }
 
-v2 pixel_to_gl_coords(v2 pos) {
-	return (v2) {
-		(2 * pos.x) / WIN_WIDTH - 1,
-		1 - (2 * pos.y) / WIN_HEIGHT
-	};
-}
-
-v2 gl_to_pixel_coords(v2 pos) {
-	return (v2) {
-		(pos.x + 1) * WIN_WIDTH / 2,
-		(1 - pos.y) * WIN_HEIGHT / 2
-	};
-}
-
 typedef struct {
 	v2 a, b, c, d;
 } Polygon;
@@ -118,9 +104,9 @@ int main(int argc, char** argv) {
 			for (i32 x = 0; x < COL; x++) {
 				i32 px = (x - y) * (tconf.width / 2);
 				i32 py = (x + y) * (tconf.height / 2 - tconf.y_offset);
-				imr_push_quad(
+				imr_push_quad_tex(
 					&imr,
-					(v2) { px, py },
+					(v3) { px, py, 0 },
 					(v2) { tconf.width , tconf.height },
 					(Rect) { map[y][x] / 3.0f, 0, 1.0f / 3.0f, 1 },
 					tex.id,
@@ -139,7 +125,7 @@ int main(int argc, char** argv) {
 
 		// Tile selection
 		v2 p = event_mouse_pos(window);
-		v2 cp = gl_to_pixel_coords(cam.pos);
+		v2 cp = gl_to_pixel_coords(cam.pos, WIN_WIDTH, WIN_HEIGHT);
 		p.x += floor(cp.x - WIN_WIDTH / 2);
 		p.y += floor(cp.y - WIN_HEIGHT / 2);
 		p.x = floor(p.x / WIN_WIDTH * cam.boundary.right);
@@ -156,9 +142,9 @@ int main(int argc, char** argv) {
 				if (A1 + A2 + A3 + A4 == A) {
 					i32 px = (x - y) * (tconf.width / 2);
 					i32 py = (x + y) * (tconf.height / 2 - tconf.y_offset);
-					imr_push_quad(
+					imr_push_quad_tex(
 						&imr,
-						(v2) { px, py },
+						(v3) { px, py, 0 },
 						(v2) { tconf.width , tconf.height },
 						(Rect) { map[y][x] / 3.0f, 0, 1.0f / 3.0f, 1 },
 						tex.id,

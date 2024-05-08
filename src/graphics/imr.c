@@ -145,7 +145,14 @@ void imr_push_vertex(IMR* imr, Vertex v) {
 	imr->buffer[imr->buff_idx++] = v.tex_id;
 }
 
-void imr_push_quad(IMR* imr, v2 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot, v4 color) {
+void imr_push_quad(IMR* imr, v3 pos, v2 size, m4 rot, v4 color) {
+	Rect tex_rect = {
+		0, 0, 1, 1
+	};
+	imr_push_quad_tex(imr, pos, size, tex_rect, imr->white.id, rot, color);
+}
+
+void imr_push_quad_tex(IMR* imr, v3 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot, v4 color) {
 	if (((imr->buff_idx + 6 * VERTEX_SIZE) / VERTEX_SIZE) >= MAX_VERT_CNT) {
 		imr_end(imr);
 		imr_begin(imr);
@@ -163,13 +170,13 @@ void imr_push_quad(IMR* imr, v2 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot,
 	p6.pos = m4_mul_v3(rot, (v3) { -size.x / 2, -size.y / 2, 0.0f });
 
 	// Shifting to the desired position
-	p1.pos = v3_add(p1.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, 0.0f });
-	p2.pos = v3_add(p2.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, 0.0f });
-	p3.pos = v3_add(p3.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, 0.0f });
+	p1.pos = v3_add(p1.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, pos.z });
+	p2.pos = v3_add(p2.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, pos.z });
+	p3.pos = v3_add(p3.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, pos.z });
 
-	p4.pos = v3_add(p4.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, 0.0f });
-	p5.pos = v3_add(p5.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, 0.0f });
-	p6.pos = v3_add(p6.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, 0.0f });
+	p4.pos = v3_add(p4.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, pos.z });
+	p5.pos = v3_add(p5.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, pos.z });
+	p6.pos = v3_add(p6.pos, (v3) { pos.x + size.x / 2, pos.y + size.y / 2, pos.z });
 
 	// Making the texure coordinates
 	p1.tex_coord = (v2) { tex_rect.x, tex_rect.y };
@@ -190,36 +197,46 @@ void imr_push_quad(IMR* imr, v2 pos, v2 size, Rect tex_rect, f32 tex_id, m4 rot,
 	imr_push_vertex(imr, p6);
 }
 
-void imr_push_triangle(IMR* imr, v2 p1, v2 p2, v2 p3, m4 rot, v4 color) {
+void imr_push_triangle(IMR* imr, v3 p1, v3 p2, v3 p3, m4 rot, v4 color) {
+	Triangle tex_coord = {
+		(v3) { 0, 0, 0 },
+		(v3) { 1, 0, 0 },
+		(v3) { 1, 1, 0 }
+	};
+	imr_push_triangle_tex(imr, p1, p2, p3, tex_coord, imr->white.id, rot, color);
+}
+
+void imr_push_triangle_tex(IMR* imr, v3 p1, v3 p2, v3 p3, Triangle tex_coord, f32 tex_id, m4 rot, v4 color) {
 	if (((imr->buff_idx + 3 * VERTEX_SIZE) / VERTEX_SIZE) >= MAX_VERT_CNT) {
 		imr_end(imr);
 		imr_begin(imr);
 	}
 
-	v2 centroid = {
+	v3 centroid = {
 		(p1.x + p2.x + p3.x) / 3.0f,
-		(p1.y + p2.y + p3.y) / 3.0f
+		(p1.y + p2.y + p3.y) / 3.0f,
+		(p1.z + p2.z + p3.z) / 3.0f,
 	};
 
 	Vertex a1, a2, a3;
 
 	// Rotating over origin
-	a1.pos = m4_mul_v3(rot, (v3) { p1.x - centroid.x, p1.y - centroid.y, 0.0f });
-	a2.pos = m4_mul_v3(rot, (v3) { p2.x - centroid.x, p2.y - centroid.y, 0.0f });
-	a3.pos = m4_mul_v3(rot, (v3) { p3.x - centroid.x, p3.y - centroid.y, 0.0f });
+	a1.pos = m4_mul_v3(rot, (v3) { p1.x - centroid.x, p1.y - centroid.y, p1.z - centroid.z });
+	a2.pos = m4_mul_v3(rot, (v3) { p2.x - centroid.x, p2.y - centroid.y, p2.z - centroid.z });
+	a3.pos = m4_mul_v3(rot, (v3) { p3.x - centroid.x, p3.y - centroid.y, p3.z - centroid.z });
 
 	// Shifting to the desired position
-	a1.pos = v3_add(a1.pos, (v3) { centroid.x, centroid.y, 0.0f });
-	a2.pos = v3_add(a2.pos, (v3) { centroid.x, centroid.y, 0.0f });
-	a3.pos = v3_add(a3.pos, (v3) { centroid.x, centroid.y, 0.0f });
+	a1.pos = v3_add(a1.pos, (v3) { centroid.x, centroid.y, centroid.z });
+	a2.pos = v3_add(a2.pos, (v3) { centroid.x, centroid.y, centroid.z });
+	a3.pos = v3_add(a3.pos, (v3) { centroid.x, centroid.y, centroid.z });
 
 	// Texture coordinates
-	a1.tex_coord = (v2) { 0, 0 };
-	a2.tex_coord = (v2) { 1, 0 };
-	a3.tex_coord = (v2) { 1, 1 };
+	a1.tex_coord = (v2) { tex_coord.a.x, tex_coord.a.y };
+	a2.tex_coord = (v2) { tex_coord.b.x, tex_coord.b.y };
+	a3.tex_coord = (v2) { tex_coord.c.x, tex_coord.c.y };
 
 	a1.color = a2.color = a3.color = color;
-	a1.tex_id = a2.tex_id = a3.tex_id = imr->white.id;
+	a1.tex_id = a2.tex_id = a3.tex_id = tex_id;
 
 	imr_push_vertex(imr, a1);
 	imr_push_vertex(imr, a2);
