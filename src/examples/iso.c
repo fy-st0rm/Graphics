@@ -49,7 +49,7 @@ typedef struct {
 Polygon pol_map[ROW][COL];
 
 int main(int argc, char** argv) {
-	Window window = Result_Window_unwrap(window_new("Game", WIN_WIDTH, WIN_HEIGHT));
+	Window window = Result_Window_unwrap(window_new("Isometric", WIN_WIDTH, WIN_HEIGHT));
 	IMR imr = Result_IMR_unwrap(imr_new());
 	OCamera cam = ocamera_new(
 		(v2) { 0, 0 },
