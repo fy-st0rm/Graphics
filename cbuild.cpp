@@ -75,7 +75,7 @@ void build_3d(int argc, char** argv) {
 
 	CBuild cbuild("gcc");
 	cbuild
-		.out("bin", "iso")
+		.out("bin", "3d")
 		.flags({"-std=gnu17"})
 		.inc_paths({
 			"src/",
