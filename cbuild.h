@@ -53,6 +53,10 @@ public:
 	CBuild& run(char** argv = NULL);
 	CBuild& clean();
 
+	std::vector<std::string> get_objs() {
+		return m_objs;
+	}
+
 private:
 	bool compile_single(const std::string& src);
 

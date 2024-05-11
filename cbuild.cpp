@@ -3,10 +3,9 @@
 
 // TODO: Cache engine into objects
 
-void compile_engine() {
+std::vector<std::string> compile_engine() {
 	CBuild cbuild("gcc");
 	cbuild
-		.flags({"-std=gnu17"})
 		.inc_paths({
 			"src/",
 			"src/external/glew/include/",
@@ -28,15 +27,16 @@ void compile_engine() {
 			"src/window/window.c",
 		})
 		.compile();
+
+	return cbuild.get_objs();
 }
 
 void build_iso(int argc, char** argv) {
-	compile_engine();
+	auto objs = compile_engine();
 
 	CBuild cbuild("gcc");
 	cbuild
 		.out("bin", "iso")
-		.flags({"-std=gnu17"})
 		.inc_paths({
 			"src/",
 			"src/external/glew/include/",
@@ -51,32 +51,18 @@ void build_iso(int argc, char** argv) {
 		.src({
 			"src/examples/iso.c",
 		})
-		.objs({
-			"src/external/glfw/src/glfw.o",
-			"src/external/glew/src/glew.o",
-			"src/external/stb/stb_image.o",
-			"src/core/defines.o",
-			"src/math/vec.o",
-			"src/math/mat.o",
-			"src/graphics/shader.o",
-			"src/graphics/texture.o",
-			"src/graphics/imr.o",
-			"src/event/event.o",
-			"src/camera/camera.o",
-			"src/window/window.o",
-		})
+		.objs(objs)
 		.build()
 		.clean()
 		.run(argv);
 }
 
 void build_3d(int argc, char** argv) {
-	compile_engine();
+	auto objs = compile_engine();
 
 	CBuild cbuild("gcc");
 	cbuild
 		.out("bin", "3d")
-		.flags({"-std=gnu17"})
 		.inc_paths({
 			"src/",
 			"src/external/glew/include/",
@@ -91,20 +77,7 @@ void build_3d(int argc, char** argv) {
 		.src({
 			"src/examples/3d.c",
 		})
-		.objs({
-			"src/external/glfw/src/glfw.o",
-			"src/external/glew/src/glew.o",
-			"src/external/stb/stb_image.o",
-			"src/core/defines.o",
-			"src/math/vec.o",
-			"src/math/mat.o",
-			"src/graphics/shader.o",
-			"src/graphics/texture.o",
-			"src/graphics/imr.o",
-			"src/event/event.o",
-			"src/camera/camera.o",
-			"src/window/window.o",
-		})
+		.objs(objs)
 		.build()
 		.clean()
 		.run(argv);
