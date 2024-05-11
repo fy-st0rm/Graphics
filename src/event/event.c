@@ -71,3 +71,7 @@ v2 event_mouse_pos(Window window) {
 		xpos, ypos
 	};
 }
+
+void event_set_mouse_pos(Window window, v2 pos) {
+	glfwSetCursorPos(window.glfw_window, pos.x, pos.y);
+}

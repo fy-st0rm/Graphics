@@ -5,6 +5,11 @@
 
 #define WIN_WIDTH 800
 #define WIN_HEIGHT 600
+#define SPEED 0.05f
+
+typedef enum {
+	LEFT, RIGHT, UP, DOWN, FRONT, BACK, TOTAL
+} Direction;
 
 int main() {
 	Window window = Result_Window_unwrap(
@@ -15,6 +20,7 @@ int main() {
 	PCamera cam = pcamera_new(
 		(v3) { 0.05, -0.3, 2.4 },
 		(v3) { 0, 0, -1 },
+		0.1f,
 		(PCamera_Info) {
 			.aspect_ratio = (f32) WIN_WIDTH / WIN_HEIGHT,
 			.fov = 45.0f,
@@ -22,6 +28,7 @@ int main() {
 			.far = 1000.0f
 		}
 	);
+	b32 movement[TOTAL];
 
 	// Backgrounds
 	Texture bg_1 = Result_Texture_unwrap(
@@ -131,29 +138,76 @@ int main() {
 		while(event_poll(window, &event)) {
 			if (event.type == KEYDOWN) {
 				switch (event.e.key) {
-					case GLFW_KEY_EQUAL:
-						pcamera_change_pos(&cam, (v3) {0, 0, -0.1});
-						break;
-					case GLFW_KEY_MINUS:
-						pcamera_change_pos(&cam, (v3) {0, 0, 0.1});
+					case GLFW_KEY_ESCAPE:
+						cam.mouse_enable = cam.mouse_enable ? false : true;
 						break;
 
 					case GLFW_KEY_W:
-						pcamera_change_pos(&cam, (v3) { 0, 0.1, 0 });
+						movement[FRONT] = true;
 						break;
 					case GLFW_KEY_A:
-						pcamera_change_pos(&cam, (v3) { -0.1, 0, 0 });
+						movement[LEFT] = true;
 						break;
 					case GLFW_KEY_S:
-						pcamera_change_pos(&cam, (v3) { 0, -0.1, 0 });
+						movement[BACK] = true;
 						break;
 					case GLFW_KEY_D:
-						pcamera_change_pos(&cam, (v3) { 0.1, 0, 0 });
+						movement[RIGHT] = true;
+						break;
+
+					case GLFW_KEY_SPACE:
+						movement[UP] = true;
+						break;
+					case GLFW_KEY_LEFT_SHIFT:
+						movement[DOWN] = true;
+						break;
+				}
+			}
+			else if (event.type == KEYUP) {
+				switch (event.e.key) {
+					case GLFW_KEY_W:
+						movement[FRONT] = false;
+						break;
+					case GLFW_KEY_A:
+						movement[LEFT] = false;
+						break;
+					case GLFW_KEY_S:
+						movement[BACK] = false;
+						break;
+					case GLFW_KEY_D:
+						movement[RIGHT] = false;
+						break;
+
+					case GLFW_KEY_SPACE:
+						movement[UP] = false;
+						break;
+					case GLFW_KEY_LEFT_SHIFT:
+						movement[DOWN] = false;
 						break;
 				}
 			}
 		}
 
+		if (movement[FRONT]) {
+			pcamera_change_pos(&cam, v3_mul_scalar(cam.dir, SPEED));
+		}
+		if (movement[BACK]) {
+			pcamera_change_pos(&cam, v3_mul_scalar(cam.dir, -SPEED));
+		}
+		if (movement[LEFT]) {
+			pcamera_change_pos(&cam, v3_mul_scalar(cam.right, -SPEED));
+		}
+		if (movement[RIGHT]) {
+			pcamera_change_pos(&cam, v3_mul_scalar(cam.right, SPEED));
+		}
+		if (movement[UP]) {
+			pcamera_change_pos(&cam, v3_mul_scalar(cam.up, SPEED));
+		}
+		if (movement[DOWN]) {
+			pcamera_change_pos(&cam, v3_mul_scalar(cam.up, -SPEED));
+		}
+
+		pcamera_handle_mouse(&cam, window);
 		m4 mvp = pcamera_calc_mvp(&cam);
 		imr_update_mvp(&imr, mvp);
 

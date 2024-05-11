@@ -34,5 +34,6 @@ typedef struct {
 
 i32 event_poll(Window window, Event* event);
 v2 event_mouse_pos(Window window);
+void event_set_mouse_pos(Window window, v2 pos);
 
 #endif // __EVENT_H__

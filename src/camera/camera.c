@@ -1,4 +1,6 @@
 #include "camera.h"
+#include "math/utils.h"
+#include <math.h>
 
 // Orthographic camera
 
@@ -60,7 +62,7 @@ m4 ocamera_calc_mvp(OCamera* cam) {
 
 // Perspective camera
 
-PCamera pcamera_new(v3 pos, v3 dir, PCamera_Info info) {
+PCamera pcamera_new(v3 pos, v3 dir, f32 sensitivity, PCamera_Info info) {
 	dir = v3_normalize(dir);
 	v3 up = { 0.0f, 1.0f, 0.0f };
 	v3 right = v3_cross(dir, up);
@@ -69,12 +71,75 @@ PCamera pcamera_new(v3 pos, v3 dir, PCamera_Info info) {
 		.dir = dir,
 		.up = up,
 		.right = right,
+		.pitch = 0.0f,
+		.yaw = -90.0f,
+		.mp = (v2) { 0, 0 },
+		.sensitivity = sensitivity,
+		.first = true,
+		.mouse_enable = false,
 		.info = info
 	};
 }
 
 void pcamera_change_pos(PCamera* cam, v3 dp) {
 	cam->pos = v3_add(cam->pos, dp);
+}
+
+void pcamera_handle_mouse(PCamera* cam, Window window) {
+	if (!cam->mouse_enable) {
+		glfwSetInputMode(
+			window.glfw_window,
+			GLFW_CURSOR,
+			GLFW_CURSOR_NORMAL
+		);
+		return;
+	}
+
+	glfwSetInputMode(
+		window.glfw_window,
+		GLFW_CURSOR,
+		GLFW_CURSOR_DISABLED
+	);
+
+	if (cam->first) {
+		event_set_mouse_pos(
+			window, (v2) {
+				window.width / 2.0f,
+				window.height / 2.0f
+			}
+		);
+		cam->mp = event_mouse_pos(window);
+		cam->first = false;
+	}
+
+	v2 p = event_mouse_pos(window);
+	v2 dp = v2_sub(cam->mp, p);
+	v2 sp = v2_mul_scalar(dp, cam->sensitivity);
+
+	cam->yaw -= sp.x;
+	cam->pitch += sp.y;
+
+	if (cam->pitch > 89.0f) {
+		cam->pitch = 89.0f;
+	}
+	else if (cam->pitch < -89.0f) {
+		cam->pitch = -89.0f;
+	}
+
+	v3 front;
+	front.x = cos(to_radians(cam->yaw)) * cos(to_radians(cam->pitch));
+	front.y = sin(to_radians(cam->pitch));
+	front.z = sin(to_radians(cam->yaw)) * cos(to_radians(cam->pitch));
+
+	cam->dir = v3_normalize(front);
+	cam->right = v3_normalize(
+		v3_cross(cam->dir, (v3) { 0, 1, 0 })
+	);
+	cam->up = v3_normalize(
+		v3_cross(cam->right, cam->dir)
+	);
+
+	cam->mp = p;
 }
 
 m4 pcamera_calc_mvp(PCamera* cam) {
