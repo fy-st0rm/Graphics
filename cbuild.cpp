@@ -57,12 +57,12 @@ void build_iso(int argc, char** argv) {
 		.run(argv);
 }
 
-void build_3d(int argc, char** argv) {
+void build_2d(int argc, char** argv) {
 	auto objs = compile_engine();
 
 	CBuild cbuild("gcc");
 	cbuild
-		.out("bin", "3d")
+		.out("bin", "2d")
 		.inc_paths({
 			"src/",
 			"src/external/glew/include/",
@@ -75,7 +75,7 @@ void build_3d(int argc, char** argv) {
 		.libs({"GL", "GLU", "m"})
 #endif
 		.src({
-			"src/examples/3d.c",
+			"src/examples/2d.c",
 		})
 		.objs(objs)
 		.build()
@@ -86,7 +86,7 @@ void build_3d(int argc, char** argv) {
 void print_usage() {
 	std::cout << "[Usage]: ./cbuild [options]" << std::endl;
 	std::cout << "\tiso: Builds isometric example\n";
-	std::cout << "\t3d: Builds 3D example\n";
+	std::cout << "\t2d: Builds 2D example\n";
 }
 
 int main(int argc, char** argv) {
@@ -101,8 +101,8 @@ int main(int argc, char** argv) {
 	for (const std::string& arg : args) {
 		if (arg == "iso")
 			build_iso(argc, argv);
-		else if (arg == "3d")
-			build_3d(argc, argv);
+		else if (arg == "2d")
+			build_2d(argc, argv);
 		else
 			print_usage();
 	}
