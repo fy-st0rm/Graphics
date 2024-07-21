@@ -6,6 +6,9 @@
 std::vector<std::string> compile_engine() {
 	CBuild cbuild("gcc");
 	cbuild
+		.flags({
+			"-D_GNU_SOURCE"
+		})
 		.inc_paths({
 			"src/",
 			"src/external/glew/include/",
