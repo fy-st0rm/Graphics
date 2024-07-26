@@ -29,7 +29,6 @@ const char* f_src =
 	"void main() {\n"
 	"int index = int(o_tex_id);\n"
 	"color = texture(textures[index], o_tex_coord) * o_color;\n"
-//	"color = o_color;\n"
 	"}\n";
 
 Result_IMR imr_new() {
@@ -120,6 +119,11 @@ void imr_end(IMR* imr) {
 
 	GLCall(glBindVertexArray(imr->vao));
 	GLCall(glDrawArrays(GL_TRIANGLES, 0, imr->buff_idx / VERTEX_SIZE));
+}
+
+void imr_switch_shader(IMR* imr, Shader shader) {
+	shader_delete(imr->shader);
+	imr->shader = shader;
 }
 
 void imr_update_mvp(IMR* imr, m4 mvp) {

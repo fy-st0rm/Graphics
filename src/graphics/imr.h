@@ -44,6 +44,7 @@ void imr_delete(IMR* imr);
 void imr_clear(v4 color);
 void imr_begin(IMR* imr);
 void imr_end(IMR* imr);
+void imr_switch_shader(IMR* imr, Shader shader);
 void imr_update_mvp(IMR* imr, m4 mvp);
 void imr_push_vertex(IMR* imr, Vertex v);
 void imr_push_quad(IMR* imr, v3 pos, v2 size, m4 rot, v4 color);

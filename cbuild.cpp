@@ -1,11 +1,10 @@
 #define CBUILD_IMPLEMENTATION
 #include "cbuild.h"
 
-// TODO: Cache engine into objects
-
-std::vector<std::string> compile_engine() {
+void build_engine() {
 	CBuild cbuild("gcc");
 	cbuild
+		.out("bin", "libengine.a")
 		.flags({
 			"-D_GNU_SOURCE"
 		})
@@ -29,14 +28,11 @@ std::vector<std::string> compile_engine() {
 			"src/camera/camera.c",
 			"src/window/window.c",
 		})
-		.compile();
-
-	return cbuild.get_objs();
+		.build_static_lib()
+		.clean();
 }
 
 void build_iso(int argc, char** argv) {
-	auto objs = compile_engine();
-
 	CBuild cbuild("gcc");
 	cbuild
 		.out("bin", "iso")
@@ -46,23 +42,23 @@ void build_iso(int argc, char** argv) {
 			"src/external/glfw/include/",
 			"src/external/stb/"
 		})
+		.lib_paths({
+			"bin/",
+		})
 #ifdef _WIN32
-		.libs({"mingw32", "glu32", "opengl32", "User32", "Gdi32", "Shell32", "m"})
+		.libs({"mingw32", "enigne", "glu32", "opengl32", "User32", "Gdi32", "Shell32", "m"})
 #elif defined(__linux__)
-		.libs({"GL", "GLU", "m"})
+		.libs({"engine", "GL", "GLU", "m"})
 #endif
 		.src({
 			"src/examples/iso.c",
 		})
-		.objs(objs)
 		.build()
 		.clean()
 		.run(argv);
 }
 
 void build_2d(int argc, char** argv) {
-	auto objs = compile_engine();
-
 	CBuild cbuild("gcc");
 	cbuild
 		.out("bin", "2d")
@@ -72,15 +68,43 @@ void build_2d(int argc, char** argv) {
 			"src/external/glfw/include/",
 			"src/external/stb/"
 		})
+		.lib_paths({
+			"bin/",
+		})
 #ifdef _WIN32
-		.libs({"mingw32", "glu32", "opengl32", "User32", "Gdi32", "Shell32", "m"})
+		.libs({"mingw32", "enigne", "glu32", "opengl32", "User32", "Gdi32", "Shell32", "m"})
 #elif defined(__linux__)
-		.libs({"GL", "GLU", "m"})
+		.libs({"engine", "GL", "GLU", "m"})
 #endif
 		.src({
 			"src/examples/2d.c",
 		})
-		.objs(objs)
+		.build()
+		.clean()
+		.run(argv);
+}
+
+void build_light(int argc, char** argv) {
+	CBuild cbuild("gcc");
+	cbuild
+		.out("bin", "light")
+		.inc_paths({
+			"src/",
+			"src/external/glew/include/",
+			"src/external/glfw/include/",
+			"src/external/stb/"
+		})
+		.lib_paths({
+			"bin/",
+		})
+#ifdef _WIN32
+		.libs({"mingw32", "enigne", "glu32", "opengl32", "User32", "Gdi32", "Shell32", "m"})
+#elif defined(__linux__)
+		.libs({"engine", "GL", "GLU", "m"})
+#endif
+		.src({
+			"src/examples/light.c",
+		})
 		.build()
 		.clean()
 		.run(argv);
@@ -88,8 +112,10 @@ void build_2d(int argc, char** argv) {
 
 void print_usage() {
 	std::cout << "[Usage]: ./cbuild [options]" << std::endl;
+	std::cout << "\tengine: Builds engine\n";
 	std::cout << "\tiso: Builds isometric example\n";
 	std::cout << "\t2d: Builds 2D example\n";
+	std::cout << "\tlight: Builds light example\n";
 }
 
 int main(int argc, char** argv) {
@@ -102,10 +128,14 @@ int main(int argc, char** argv) {
 		print_usage();
 
 	for (const std::string& arg : args) {
-		if (arg == "iso")
+		if (arg == "engine")
+			build_engine();
+		else if (arg == "iso")
 			build_iso(argc, argv);
 		else if (arg == "2d")
 			build_2d(argc, argv);
+		else if (arg == "light")
+			build_light(argc, argv);
 		else
 			print_usage();
 	}
