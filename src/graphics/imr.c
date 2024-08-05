@@ -89,6 +89,7 @@ Result_IMR imr_new() {
 		.vao = vao,
 		.vbo = vbo,
 		.shader = shader,
+		.def_shader = shader,
 		.buff_idx = 0,
 		.white = white
 	});
@@ -99,6 +100,7 @@ void imr_delete(IMR* imr) {
 	GLCall(glDeleteBuffers(1, &imr->vbo));
 	texture_delete(imr->white);
 	shader_delete(imr->shader);
+	shader_delete(imr->def_shader);
 }
 
 void imr_clear(v4 color) {
@@ -122,8 +124,11 @@ void imr_end(IMR* imr) {
 }
 
 void imr_switch_shader(IMR* imr, Shader shader) {
-	shader_delete(imr->shader);
 	imr->shader = shader;
+}
+
+void imr_switch_shader_to_default(IMR* imr) {
+	imr->shader = imr->def_shader;
 }
 
 void imr_update_mvp(IMR* imr, m4 mvp) {

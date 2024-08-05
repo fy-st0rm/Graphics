@@ -32,6 +32,7 @@ STATIC_ASSERT(VERTEX_SIZE == sizeof(Vertex) / sizeof(f32), "Size of vertex missm
 typedef struct {
 	u32 vao, vbo;
 	Shader shader;
+	Shader def_shader;
 	f32 buffer[MAX_BUFF_CAP];
 	u32 buff_idx;
 	Texture white;
@@ -45,6 +46,7 @@ void imr_clear(v4 color);
 void imr_begin(IMR* imr);
 void imr_end(IMR* imr);
 void imr_switch_shader(IMR* imr, Shader shader);
+void imr_switch_shader_to_default(IMR* imr);
 void imr_update_mvp(IMR* imr, m4 mvp);
 void imr_push_vertex(IMR* imr, Vertex v);
 void imr_push_quad(IMR* imr, v3 pos, v2 size, m4 rot, v4 color);
