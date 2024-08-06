@@ -11,9 +11,12 @@
 #define SURF_WIDTH 133
 #define SURF_HEIGHT 100
 
+#define TOTAL_LIGHTS 2
+
 #define SHADER_SRC(...)\
 	"#version 440 core\n"\
 	"#define PI 3.1415926538\n"\
+	"#define TOTAL_LIGHTS 2\n"\
 	#__VA_ARGS__\
 
 const char* vertex_src = SHADER_SRC(
@@ -53,11 +56,9 @@ const char* fragment_src = SHADER_SRC(
 	};
 
 	uniform vec2 dim;
-	uniform Light light;
+	uniform Light light[TOTAL_LIGHTS];
 
 	vec2 pos = vec2(133 / 2, 100 / 2) / dim;
-
-	vec2 light_norm = light.pos / dim;
 	vec2 pix_size = vec2(2);
 
 	vec2 rotate(vec2 v, float angle) {
@@ -70,45 +71,52 @@ const char* fragment_src = SHADER_SRC(
 	}
 
 	void main() {
-		vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
-		vec2 uv = block_coord / dim;
+		vec4 final_color = vec4(0,0,0,1);
 
-		// Calculate the vector from the light to the current fragment
-		vec2 toFragment = uv - light_norm;
-		
-		// Rotate this vector around the light position
-		vec2 rotatedToFragment = rotate(toFragment, light.dir);
-		
-		// Adjust the UV coordinates accordingly
-		uv = rotatedToFragment + light_norm;
+		for (int i = 0; i < TOTAL_LIGHTS; i++) {
+			vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
+			vec2 uv = block_coord / dim;
 
-		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
-		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
-		float angular_fall_off = smoothstep(light.fov, 0, angle);
+			vec2 light_norm = light[i].pos / dim;
 
-		//vec2 toCenter = pos - o_tex_coord;
-		//vec3 normal = vec3(toCenter, 1.0);
-		//normal = normalize(normal);
-		//vec3 normalColor = 0.5 * (normal + 1.0);
-		//normal_channel= vec4(normalColor, 1.0);
+			// Calculate the vector from the light to the current fragment
+			vec2 toFragment = uv - light_norm;
+			
+			// Rotate this vector around the light position
+			vec2 rotatedToFragment = rotate(toFragment, light[i].dir);
+			
+			// Adjust the UV coordinates accordingly
+			uv = rotatedToFragment + light_norm;
 
-		// Calculate the vector from the light to the current fragment
-		//vec2 new_pos = pos - light_norm;
-		//
-		//// Rotate this vector around the light position
-		//vec2 rot_pos = rotate(new_pos, light.dir);
-		
-		//// Adjust the UV coordinates accordingly
-		//pos = rot_pos + light_norm;
+			float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
+			float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
+			float angular_fall_off = smoothstep(light[i].fov, 0, angle);
 
-		//vec2 dir = normalize(pos - light_norm);
-		//float normal_fall_off = clamp(dot(dir, normalColor.xy), 0.0, 1);
+			//vec2 toCenter = pos - o_tex_coord;
+			//vec3 normal = vec3(toCenter, 1.0);
+			//normal = normalize(normal);
+			//vec3 normalColor = 0.5 * (normal + 1.0);
+			//normal_channel= vec4(normalColor, 1.0);
 
-		color_channel = o_color
-		* light.intensity
-		* light.color
-		* radial_fall_off
-		* angular_fall_off;
+			// Calculate the vector from the light to the current fragment
+			//vec2 new_pos = pos - light_norm;
+			//
+			//// Rotate this vector around the light position
+			//vec2 rot_pos = rotate(new_pos, light.dir);
+			
+			//// Adjust the UV coordinates accordingly
+			//pos = rot_pos + light_norm;
+
+			//vec2 dir = normalize(pos - light_norm);
+			//float normal_fall_off = clamp(dot(dir, normalColor.xy), 0.0, 1);
+
+			final_color += o_color
+			* light[i].intensity
+			* light[i].color
+			* radial_fall_off
+			* angular_fall_off;
+		}
+		color_channel = final_color;
 		//* normal_fall_off;
 	}
 );
@@ -129,9 +137,8 @@ const char* light_fragment_src = SHADER_SRC(
 	};
 
 	uniform vec2 dim;
-	uniform Light light;
+	uniform Light light[TOTAL_LIGHTS];
 
-	vec2 light_norm = light.pos / dim;
 	vec2 pix_size = vec2(2);
 
 	vec2 rotate(vec2 v, float angle) {
@@ -144,28 +151,34 @@ const char* light_fragment_src = SHADER_SRC(
 	}
 
 	void main() {
-		vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
-		vec2 uv = block_coord / dim;
+		vec4 final_color = vec4(0, 0, 0, 1);
+		for (int i = 0; i < TOTAL_LIGHTS; i++) {
+			vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
+			vec2 uv = block_coord / dim;
 
-		// Calculate the vector from the light to the current fragment
-		vec2 toFragment = uv - light_norm;
-		
-		// Rotate this vector around the light position
-		vec2 rotatedToFragment = rotate(toFragment, light.dir);
-		
-		// Adjust the UV coordinates accordingly
-		uv = rotatedToFragment + light_norm;
+			vec2 light_norm = light[i].pos / dim;
 
-		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
-		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
+			// Calculate the vector from the light to the current fragment
+			vec2 toFragment = uv - light_norm;
+			
+			// Rotate this vector around the light position
+			vec2 rotatedToFragment = rotate(toFragment, light[i].dir);
+			
+			// Adjust the UV coordinates accordingly
+			uv = rotatedToFragment + light_norm;
 
-		float angular_fall_off = smoothstep(light.fov, 0, angle);
+			float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
+			float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
+			float angular_fall_off = smoothstep(light[i].fov, 0, angle);
+			
+			final_color += o_color
+			* radial_fall_off
+			* angular_fall_off
+			* light[i].intensity
+			* light[i].color;
+		}
 
-		color = o_color
-		* radial_fall_off
-		* angular_fall_off
-		* light.intensity
-		* light.color;
+		color = final_color;
 	}
 );
 
@@ -182,7 +195,7 @@ const char* mix_fragment_src = SHADER_SRC(
 	void main() {
 	vec4 colo_1 = texture(color_texture, o_tex_coord);
 	vec4 colo_2 = texture(light_texture, o_tex_coord);
-	color = colo_1 + colo_2 * 0.3;
+	color = colo_1 + colo_2 * 0.5;
 	}
 );
 
@@ -272,15 +285,27 @@ int main(int argc, char** argv) {
 	FBO mix_fbo = generate_fbo(SURF_WIDTH, SURF_HEIGHT);
 
 	// Lights
-	Light light = {
+	Light light_1 = {
 		.pos = {
-			SURF_WIDTH / 2 + 40, SURF_HEIGHT / 2
+			SURF_WIDTH / 2 + 40, SURF_HEIGHT / 2 + 20
 		},
 		.intensity = 0.9f,
 		.fov = PI / 2,
-		.dir = PI,
+		.dir = PI / 1.5,
 		.color = { 0.8, 0.5, 0, 1 }
 	};
+
+	Light light_2 = {
+		.pos = {
+			SURF_WIDTH / 2 - 40, SURF_HEIGHT / 2 + 20
+		},
+		.intensity = 0.9f,
+		.fov = PI / 2,
+		.dir = PI / 3,
+		.color = { 0.0, 0.5, 0.8, 1 }
+	};
+
+	Light lights[TOTAL_LIGHTS] = { light_1, light_2 };
 
 	while (!window.should_close) {
 
@@ -302,25 +327,35 @@ int main(int argc, char** argv) {
 			assert(loc != -1, "Cannot find uniform: dim\n");
 			GLCall(glUniform2f(loc, SURF_WIDTH, SURF_HEIGHT));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.pos"));
-			assert(loc != -1, "Cannot find uniform: light.pos\n");
-			GLCall(glUniform2f(loc, light.pos.x, light.pos.y));
+			for (int i = 0; i < TOTAL_LIGHTS; i++) {
+				char* uni_name = "light[%d].%s";
+				char buff[100];
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.intensity"));
-			assert(loc != -1, "Cannot find uniform: light.intensity\n");
-			GLCall(glUniform1f(loc, light.intensity));
+				sprintf(buff, uni_name, i, "pos");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: %s\n", buff);
+				GLCall(glUniform2f(loc, lights[i].pos.x, lights[i].pos.y));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.dir"));
-			assert(loc != -1, "Cannot find uniform: light.dir\n");
-			GLCall(glUniform1f(loc, light.dir));
+				sprintf(buff, uni_name, i, "intensity");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: light.intensity\n");
+				GLCall(glUniform1f(loc, lights[i].intensity));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.fov"));
-			assert(loc != -1, "Cannot find uniform: light.fov\n");
-			GLCall(glUniform1f(loc, light.fov));
+				sprintf(buff, uni_name, i, "dir");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: light.dir\n");
+				GLCall(glUniform1f(loc, lights[i].dir));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.color"));
-			assert(loc != -1, "Cannot find uniform: light.color\n");
-			GLCall(glUniform4f(loc, light.color.r, light.color.g, light.color.b, light.color.a));
+				sprintf(buff, uni_name, i, "fov");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: light.fov\n");
+				GLCall(glUniform1f(loc, lights[i].fov));
+
+				sprintf(buff, uni_name, i, "color");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: light.color\n");
+				GLCall(glUniform4f(loc, lights[i].color.r, lights[i].color.g, lights[i].color.b, lights[i].color.a));
+			}
 
 			v2 size = { 20, 20 };
 			imr_push_quad(
@@ -357,26 +392,35 @@ int main(int argc, char** argv) {
 			assert(loc != -1, "Cannot find uniform: dim\n");
 			GLCall(glUniform2f(loc, SURF_WIDTH, SURF_HEIGHT));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.pos"));
-			assert(loc != -1, "Cannot find uniform: light.pos\n");
-			GLCall(glUniform2f(loc, light.pos.x, light.pos.y));
+			for (int i = 0; i < TOTAL_LIGHTS; i++) {
+				char* uni_name = "light[%d].%s";
+				char buff[100];
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.intensity"));
-			assert(loc != -1, "Cannot find uniform: light.intensity\n");
-			GLCall(glUniform1f(loc, light.intensity));
+				sprintf(buff, uni_name, i, "pos");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: %s\n", buff);
+				GLCall(glUniform2f(loc, lights[i].pos.x, lights[i].pos.y));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.dir"));
-			assert(loc != -1, "Cannot find uniform: light.dir\n");
-			GLCall(glUniform1f(loc, light.dir));
+				sprintf(buff, uni_name, i, "intensity");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: %s\n", buff);
+				GLCall(glUniform1f(loc, lights[i].intensity));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.fov"));
-			assert(loc != -1, "Cannot find uniform: light.fov\n");
-			GLCall(glUniform1f(loc, light.fov));
+				sprintf(buff, uni_name, i, "dir");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: %s\n", buff);
+				GLCall(glUniform1f(loc, lights[i].dir));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light.color"));
-			assert(loc != -1, "Cannot find uniform: light.color\n");
-			GLCall(glUniform4f(loc, light.color.r, light.color.g, light.color.b, light.color.a));
+				sprintf(buff, uni_name, i, "fov");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: %s\n", buff);
+				GLCall(glUniform1f(loc, lights[i].fov));
 
+				sprintf(buff, uni_name, i, "color");
+				loc = GLCall(glGetUniformLocation(light_shader, buff));
+				assert(loc != -1, "Cannot find uniform: %s\n", buff);
+				GLCall(glUniform4f(loc, lights[i].color.r, lights[i].color.g, lights[i].color.b, lights[i].color.a));
+			}
 			imr_push_quad(
 				&imr,
 				(v3) { 0, 0, 0 },
