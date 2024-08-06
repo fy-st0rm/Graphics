@@ -44,55 +44,20 @@ const char* fragment_src = SHADER_SRC(
 	in vec2 o_tex_coord;
 	in float o_tex_id;
 
-	uniform vec2 light_pos;
+	struct Light {
+		vec2 pos;
+		float intensity;
+		float dir;
+		float fov;
+		vec4 color;
+	};
+
 	uniform vec2 dim;
+	uniform Light light;
 
 	vec2 pos = vec2(133 / 2, 100 / 2) / dim;
 
-	float intensity = 0.9;
-	vec2 light_norm = light_pos / dim;
-	vec2 pix_size = vec2(2);
-
-	void main() {
-		vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
-		vec2 uv = block_coord / dim;
-
-		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
-		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
-		float angular_fall_off = smoothstep(PI / 2, 0, angle);
-
-		vec2 toCenter = pos - o_tex_coord;
-		vec3 normal = vec3(toCenter, 1.0);
-		normal = normalize(normal);
-		vec3 normalColor = 0.5 * (normal + 1.0);
-		normal_channel= vec4(normalColor, 1.0);
-
-		vec2 dir = normalize(pos - light_norm);
-		float normal_fall_off = clamp(dot(dir, normalColor.xy), 0.0, 1);
-
-		color_channel = o_color
-		* intensity
-		* radial_fall_off
-		* angular_fall_off
-		* normal_fall_off;
-	}
-);
-
-const char* light_fragment_src = SHADER_SRC(
-	layout (location = 0) out vec4 color;
-	
-	in vec4 o_color;
-	in vec2 o_tex_coord;
-	in float o_tex_id;
-
-	uniform vec2 dim;
-
-	uniform vec2 light_pos;
-	uniform float intensity;
-	uniform float dir;
-	uniform float fov;
-
-	vec2 light_norm = light_pos / dim;
+	vec2 light_norm = light.pos / dim;
 	vec2 pix_size = vec2(2);
 
 	vec2 rotate(vec2 v, float angle) {
@@ -112,7 +77,81 @@ const char* light_fragment_src = SHADER_SRC(
 		vec2 toFragment = uv - light_norm;
 		
 		// Rotate this vector around the light position
-		vec2 rotatedToFragment = rotate(toFragment, dir);
+		vec2 rotatedToFragment = rotate(toFragment, light.dir);
+		
+		// Adjust the UV coordinates accordingly
+		uv = rotatedToFragment + light_norm;
+
+		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
+		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
+		float angular_fall_off = smoothstep(light.fov, 0, angle);
+
+		//vec2 toCenter = pos - o_tex_coord;
+		//vec3 normal = vec3(toCenter, 1.0);
+		//normal = normalize(normal);
+		//vec3 normalColor = 0.5 * (normal + 1.0);
+		//normal_channel= vec4(normalColor, 1.0);
+
+		// Calculate the vector from the light to the current fragment
+		//vec2 new_pos = pos - light_norm;
+		//
+		//// Rotate this vector around the light position
+		//vec2 rot_pos = rotate(new_pos, light.dir);
+		
+		//// Adjust the UV coordinates accordingly
+		//pos = rot_pos + light_norm;
+
+		//vec2 dir = normalize(pos - light_norm);
+		//float normal_fall_off = clamp(dot(dir, normalColor.xy), 0.0, 1);
+
+		color_channel = o_color
+		* light.intensity
+		* light.color
+		* radial_fall_off
+		* angular_fall_off;
+		//* normal_fall_off;
+	}
+);
+
+const char* light_fragment_src = SHADER_SRC(
+	layout (location = 0) out vec4 color;
+	
+	in vec4 o_color;
+	in vec2 o_tex_coord;
+	in float o_tex_id;
+
+	struct Light {
+		vec2 pos;
+		float intensity;
+		float dir;
+		float fov;
+		vec4 color;
+	};
+
+	uniform vec2 dim;
+	uniform Light light;
+
+	vec2 light_norm = light.pos / dim;
+	vec2 pix_size = vec2(2);
+
+	vec2 rotate(vec2 v, float angle) {
+		float cosAngle = cos(angle);
+		float sinAngle = sin(angle);
+		return vec2(
+			v.x * cosAngle - v.y * sinAngle,
+			v.x * sinAngle + v.y * cosAngle
+		);
+	}
+
+	void main() {
+		vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
+		vec2 uv = block_coord / dim;
+
+		// Calculate the vector from the light to the current fragment
+		vec2 toFragment = uv - light_norm;
+		
+		// Rotate this vector around the light position
+		vec2 rotatedToFragment = rotate(toFragment, light.dir);
 		
 		// Adjust the UV coordinates accordingly
 		uv = rotatedToFragment + light_norm;
@@ -120,9 +159,13 @@ const char* light_fragment_src = SHADER_SRC(
 		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
 		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
 
-		float angular_fall_off = smoothstep(fov, 0, angle);
+		float angular_fall_off = smoothstep(light.fov, 0, angle);
 
-		color = o_color * intensity * radial_fall_off * angular_fall_off;
+		color = o_color
+		* radial_fall_off
+		* angular_fall_off
+		* light.intensity
+		* light.color;
 	}
 );
 
@@ -194,6 +237,7 @@ typedef struct {
 	f32 intensity;
 	f32 fov;
 	f32 dir;
+	v4 color;
 } Light;
 
 int main(int argc, char** argv) {
@@ -228,18 +272,14 @@ int main(int argc, char** argv) {
 	FBO mix_fbo = generate_fbo(SURF_WIDTH, SURF_HEIGHT);
 
 	// Lights
-	v2 light_pos = {
-		SURF_WIDTH / 2 - 40, SURF_HEIGHT / 2
-	};
-	v2 light_size = { WIN_WIDTH, WIN_HEIGHT};
-
 	Light light = {
 		.pos = {
-			SURF_WIDTH / 2 - 40, SURF_HEIGHT / 2
+			SURF_WIDTH / 2 + 40, SURF_HEIGHT / 2
 		},
 		.intensity = 0.9f,
 		.fov = PI / 2,
-		.dir = 0
+		.dir = PI,
+		.color = { 0.8, 0.5, 0, 1 }
 	};
 
 	while (!window.should_close) {
@@ -258,13 +298,29 @@ int main(int argc, char** argv) {
 			m4 mvp = ocamera_calc_mvp(&cam);
 			imr_update_mvp(&imr, mvp);
 
-			int loc = GLCall(glGetUniformLocation(color_shader, "light_pos"));
-			assert(loc != -1, "Cannot find uniform: light_pos\n");
-			GLCall(glUniform2f(loc, light_pos.x, light_pos.y));
-
-			loc = GLCall(glGetUniformLocation(color_shader, "dim"));
+			int loc = GLCall(glGetUniformLocation(color_shader, "dim"));
 			assert(loc != -1, "Cannot find uniform: dim\n");
 			GLCall(glUniform2f(loc, SURF_WIDTH, SURF_HEIGHT));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light.pos"));
+			assert(loc != -1, "Cannot find uniform: light.pos\n");
+			GLCall(glUniform2f(loc, light.pos.x, light.pos.y));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light.intensity"));
+			assert(loc != -1, "Cannot find uniform: light.intensity\n");
+			GLCall(glUniform1f(loc, light.intensity));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light.dir"));
+			assert(loc != -1, "Cannot find uniform: light.dir\n");
+			GLCall(glUniform1f(loc, light.dir));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light.fov"));
+			assert(loc != -1, "Cannot find uniform: light.fov\n");
+			GLCall(glUniform1f(loc, light.fov));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light.color"));
+			assert(loc != -1, "Cannot find uniform: light.color\n");
+			GLCall(glUniform4f(loc, light.color.r, light.color.g, light.color.b, light.color.a));
 
 			v2 size = { 20, 20 };
 			imr_push_quad(
@@ -301,30 +357,30 @@ int main(int argc, char** argv) {
 			assert(loc != -1, "Cannot find uniform: dim\n");
 			GLCall(glUniform2f(loc, SURF_WIDTH, SURF_HEIGHT));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "light_pos"));
-			assert(loc != -1, "Cannot find uniform: light_pos\n");
+			loc = GLCall(glGetUniformLocation(light_shader, "light.pos"));
+			assert(loc != -1, "Cannot find uniform: light.pos\n");
 			GLCall(glUniform2f(loc, light.pos.x, light.pos.y));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "intensity"));
-			assert(loc != -1, "Cannot find uniform: intensity\n");
+			loc = GLCall(glGetUniformLocation(light_shader, "light.intensity"));
+			assert(loc != -1, "Cannot find uniform: light.intensity\n");
 			GLCall(glUniform1f(loc, light.intensity));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "dir"));
-			assert(loc != -1, "Cannot find uniform: dir\n");
+			loc = GLCall(glGetUniformLocation(light_shader, "light.dir"));
+			assert(loc != -1, "Cannot find uniform: light.dir\n");
 			GLCall(glUniform1f(loc, light.dir));
 
-			loc = GLCall(glGetUniformLocation(light_shader, "fov"));
-			assert(loc != -1, "Cannot find uniform: fov\n");
+			loc = GLCall(glGetUniformLocation(light_shader, "light.fov"));
+			assert(loc != -1, "Cannot find uniform: light.fov\n");
 			GLCall(glUniform1f(loc, light.fov));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light.color"));
+			assert(loc != -1, "Cannot find uniform: light.color\n");
+			GLCall(glUniform4f(loc, light.color.r, light.color.g, light.color.b, light.color.a));
 
 			imr_push_quad(
 				&imr,
-				(v3) {
-					light_pos.x - light_size.x / 2,
-					light_pos.y - light_size.y / 2,
-					0
-				},
-				light_size,
+				(v3) { 0, 0, 0 },
+				(v2) { WIN_WIDTH, WIN_HEIGHT },
 				rotate_z(0),
 				(v4) { 1, 1, 1, 1 }
 			);
@@ -374,7 +430,7 @@ int main(int argc, char** argv) {
 
 		// Final render
 		{
-			u32 texture_to_render = light_fbo.color_texture;
+			u32 texture_to_render = mix_fbo.color_texture;
 
 			imr_switch_shader_to_default(&imr);
 
