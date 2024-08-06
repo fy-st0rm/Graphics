@@ -11,108 +11,137 @@
 #define SURF_WIDTH 133
 #define SURF_HEIGHT 100
 
-const char* vertex_src =
-	"#version 440 core\n"
-	"layout (location = 0) in vec3 position;\n"
-	"layout (location = 1) in vec4 color;\n"
-	"layout (location = 2) in vec2 tex_coord;\n"
-	"layout (location = 3) in float tex_id;\n"
+#define SHADER_SRC(...)\
+	"#version 440 core\n"\
+	"#define PI 3.1415926538\n"\
+	#__VA_ARGS__\
 
-	"uniform mat4 mvp;\n"
+const char* vertex_src = SHADER_SRC(
+	layout (location = 0) in vec3 position;
+	layout (location = 1) in vec4 color;
+	layout (location = 2) in vec2 tex_coord;
+	layout (location = 3) in float tex_id;
 
-	"out vec4 o_color;\n"
-	"out vec2 o_tex_coord;\n"
-	"out float o_tex_id;\n"
+	uniform mat4 mvp;
 
-	"void main() {\n"
-	"o_color = color;\n"
-	"o_tex_coord = tex_coord;\n"
-	"o_tex_id = tex_id;\n"
-	"gl_Position = mvp * vec4(position, 1.0f);\n"
-	"}\n";
+	out vec4 o_color;
+	out vec2 o_tex_coord;
+	out float o_tex_id;
 
-const char* fragment_src = 
-	"#version 440 core\n"
+	void main() {
+		o_color = color;
+		o_tex_coord = tex_coord;
+		o_tex_id = tex_id;
+		gl_Position = mvp * vec4(position, 1.0f);
+	}
+);
 
-	"layout (location = 0) out vec4 color_channel;\n"
-	"layout (location = 1) out vec4 normal_channel;\n"
+const char* fragment_src = SHADER_SRC(
+	layout (location = 0) out vec4 color_channel;
+	layout (location = 1) out vec4 normal_channel;
 
-	"in vec4 o_color;\n"
-	"in vec2 o_tex_coord;\n"
-	"in float o_tex_id;\n"
+	in vec4 o_color;
+	in vec2 o_tex_coord;
+	in float o_tex_id;
 
-	"uniform vec2 light_pos;\n"
-	"uniform vec2 dim;\n"
+	uniform vec2 light_pos;
+	uniform vec2 dim;
 
-	"vec2 pos = vec2(133 / 2, 100 / 2) / dim;\n"
+	vec2 pos = vec2(133 / 2, 100 / 2) / dim;
 
-	"float intensity = 0.9;\n"
-	"vec2 light_norm = light_pos / dim;\n"
-	"vec2 pix_size = vec2(2);\n"
+	float intensity = 0.9;
+	vec2 light_norm = light_pos / dim;
+	vec2 pix_size = vec2(2);
 
-	"void main() {\n"
+	void main() {
+		vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
+		vec2 uv = block_coord / dim;
 
-		"vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;\n"
-		"vec2 uv = block_coord / dim;\n"
+		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
+		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
+		float angular_fall_off = smoothstep(PI / 2, 0, angle);
 
-		"float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);\n"
-		"float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));\n"
-		"float angular_fall_off = smoothstep(3.14 / 2, 0, angle);\n"
+		vec2 toCenter = pos - o_tex_coord;
+		vec3 normal = vec3(toCenter, 1.0);
+		normal = normalize(normal);
+		vec3 normalColor = 0.5 * (normal + 1.0);
+		normal_channel= vec4(normalColor, 1.0);
 
-		"vec2 toCenter = pos - o_tex_coord;\n"
-		"vec3 normal = vec3(toCenter, 1.0);\n"
-		"normal = normalize(normal);\n"
-		"vec3 normalColor = 0.5 * (normal + 1.0);\n"
-		"normal_channel= vec4(normalColor, 1.0);\n"
+		vec2 dir = normalize(pos - light_norm);
+		float normal_fall_off = clamp(dot(dir, normalColor.xy), 0.0, 1);
 
-		"vec2 dir = normalize(pos - light_norm);\n"
-		"float normal_fall_off = clamp(dot(dir, normalColor.xy), 0.0, 1);\n"
+		color_channel = o_color
+		* intensity
+		* radial_fall_off
+		* angular_fall_off
+		* normal_fall_off;
+	}
+);
 
-		"color_channel = o_color * intensity * radial_fall_off * angular_fall_off * normal_fall_off;\n"
-	"}\n";
+const char* light_fragment_src = SHADER_SRC(
+	layout (location = 0) out vec4 color;
+	
+	in vec4 o_color;
+	in vec2 o_tex_coord;
+	in float o_tex_id;
 
-const char* light_fragment_src =
-	"#version 440 core\n"
-	"layout (location = 0) out vec4 color;\n"
+	uniform vec2 dim;
 
-	"in vec4 o_color;\n"
-	"in vec2 o_tex_coord;\n"
-	"in float o_tex_id;\n"
+	uniform vec2 light_pos;
+	uniform float intensity;
+	uniform float dir;
+	uniform float fov;
 
-	"uniform vec2 light_pos;\n"
-	"uniform vec2 dim;\n"
+	vec2 light_norm = light_pos / dim;
+	vec2 pix_size = vec2(2);
 
-	"float intensity = 0.9;\n"
-	"vec2 light_norm = light_pos / dim;\n"
-	"vec2 pix_size = vec2(2);\n"
+	vec2 rotate(vec2 v, float angle) {
+		float cosAngle = cos(angle);
+		float sinAngle = sin(angle);
+		return vec2(
+			v.x * cosAngle - v.y * sinAngle,
+			v.x * sinAngle + v.y * cosAngle
+		);
+	}
 
-	"void main() {\n"
-	"vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;\n"
-	"vec2 uv = block_coord / dim;\n"
+	void main() {
+		vec2 block_coord = floor(gl_FragCoord.xy / pix_size) * pix_size;
+		vec2 uv = block_coord / dim;
 
-	"float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);\n"
-	"float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));\n"
-	"float angular_fall_off = smoothstep(3.14 / 2, 0, angle);\n"
+		// Calculate the vector from the light to the current fragment
+		vec2 toFragment = uv - light_norm;
+		
+		// Rotate this vector around the light position
+		vec2 rotatedToFragment = rotate(toFragment, dir);
+		
+		// Adjust the UV coordinates accordingly
+		uv = rotatedToFragment + light_norm;
 
-	"color = o_color * intensity * radial_fall_off * angular_fall_off;\n"
-	"}\n";
+		float radial_fall_off = pow(1 - distance(light_norm, uv.xy), 2);
+		float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
 
-const char* mix_fragment_src =
-	"#version 440 core\n"
-	"layout (location = 0) out vec4 color;\n"
+		float angular_fall_off = smoothstep(fov, 0, angle);
 
-	"in vec4 o_color;\n"
-	"in vec2 o_tex_coord;\n"
-	"in float o_tex_id;\n"
+		color = o_color * intensity * radial_fall_off * angular_fall_off;
+	}
+);
 
-	"uniform sampler2D color_texture;\n"
-	"uniform sampler2D light_texture;\n"
+const char* mix_fragment_src = SHADER_SRC(
+	layout (location = 0) out vec4 color;
 
-	"void main() {\n"
-	"vec4 colo_1 = texture(color_texture, o_tex_coord);\n"
-	"vec4 colo_2 = texture(light_texture, o_tex_coord);\n"
-	"color = colo_1 + colo_2 * 0.3;\n"
-	"}\n";
+	in vec4 o_color;
+	in vec2 o_tex_coord;
+	in float o_tex_id;
+
+	uniform sampler2D color_texture;
+	uniform sampler2D light_texture;
+
+	void main() {
+	vec4 colo_1 = texture(color_texture, o_tex_coord);
+	vec4 colo_2 = texture(light_texture, o_tex_coord);
+	color = colo_1 + colo_2 * 0.3;
+	}
+);
 
 typedef struct {
 	u32 fbo;
@@ -160,6 +189,13 @@ FBO generate_fbo(u32 width, u32 height) {
 	};
 }
 
+typedef struct {
+	v2 pos;
+	f32 intensity;
+	f32 fov;
+	f32 dir;
+} Light;
+
 int main(int argc, char** argv) {
 	// Window
 	Window window = Result_Window_unwrap(
@@ -196,6 +232,15 @@ int main(int argc, char** argv) {
 		SURF_WIDTH / 2 - 40, SURF_HEIGHT / 2
 	};
 	v2 light_size = { WIN_WIDTH, WIN_HEIGHT};
+
+	Light light = {
+		.pos = {
+			SURF_WIDTH / 2 - 40, SURF_HEIGHT / 2
+		},
+		.intensity = 0.9f,
+		.fov = PI / 2,
+		.dir = 0
+	};
 
 	while (!window.should_close) {
 
@@ -252,13 +297,25 @@ int main(int argc, char** argv) {
 			m4 mvp = ocamera_calc_mvp(&cam);
 			imr_update_mvp(&imr, mvp);
 
-			int loc = GLCall(glGetUniformLocation(light_shader, "light_pos"));
-			assert(loc != -1, "Cannot find uniform: light_pos\n");
-			GLCall(glUniform2f(loc, light_pos.x, light_pos.y));
-
-			loc = GLCall(glGetUniformLocation(light_shader, "dim"));
+			int loc = GLCall(glGetUniformLocation(light_shader, "dim"));
 			assert(loc != -1, "Cannot find uniform: dim\n");
 			GLCall(glUniform2f(loc, SURF_WIDTH, SURF_HEIGHT));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "light_pos"));
+			assert(loc != -1, "Cannot find uniform: light_pos\n");
+			GLCall(glUniform2f(loc, light.pos.x, light.pos.y));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "intensity"));
+			assert(loc != -1, "Cannot find uniform: intensity\n");
+			GLCall(glUniform1f(loc, light.intensity));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "dir"));
+			assert(loc != -1, "Cannot find uniform: dir\n");
+			GLCall(glUniform1f(loc, light.dir));
+
+			loc = GLCall(glGetUniformLocation(light_shader, "fov"));
+			assert(loc != -1, "Cannot find uniform: fov\n");
+			GLCall(glUniform1f(loc, light.fov));
 
 			imr_push_quad(
 				&imr,
@@ -317,7 +374,7 @@ int main(int argc, char** argv) {
 
 		// Final render
 		{
-			u32 texture_to_render = mix_fbo.color_texture;
+			u32 texture_to_render = light_fbo.color_texture;
 
 			imr_switch_shader_to_default(&imr);
 

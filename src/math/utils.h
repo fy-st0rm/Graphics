@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <math.h>
 
-#define PE_PI 3.14159
+#define PI 3.14159
 #define to_radians(x) ((x) * PE_PI / 180)
 #define to_degrees(x) ((x) * 180 / PE_PI)
 #define rand_init(seed) srand(seed)
