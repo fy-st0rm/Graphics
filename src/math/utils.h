@@ -7,8 +7,8 @@
 #include <math.h>
 
 #define PI 3.14159
-#define to_radians(x) ((x) * PE_PI / 180)
-#define to_degrees(x) ((x) * 180 / PE_PI)
+#define to_radians(x) ((x) * PI / 180)
+#define to_degrees(x) ((x) * 180 / PI)
 #define rand_init(seed) srand(seed)
 #define rand_range(l, u) rand() % (u - l + 1) + l
 
