@@ -49,15 +49,15 @@ typedef struct {
 Polygon pol_map[ROW][COL];
 
 int main(int argc, char** argv) {
-	Window window = Result_Window_unwrap(window_new("Isometric", WIN_WIDTH, WIN_HEIGHT));
-	IMR imr = Result_IMR_unwrap(imr_new());
+	Window window = unwrap(window_new("Isometric", WIN_WIDTH, WIN_HEIGHT));
+	IMR imr = unwrap(imr_new());
 	OCamera cam = ocamera_new(
 		(v2) { 0, 0 },
 		3.0f,
 		(OCamera_Boundary) { 0, WIN_WIDTH, 0, WIN_HEIGHT, -1, 1000 }
 	);
 
-	Texture tex = Result_Texture_unwrap(texture_from_file("assets/sprites.png", false));
+	Texture tex = unwrap(texture_from_file("assets/sprites.png", false));
 	texture_bind(tex);
 
 	TileConfig tconf = {

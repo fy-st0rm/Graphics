@@ -12,7 +12,7 @@ typedef enum {
 	FRAGMENT_SHADER = GL_FRAGMENT_SHADER
 } Shader_Type;
 
-DECLARE_RESULT(Shader, Shader);
+RESULT(Shader, Shader);
 
 Result_Shader shader_new(const char* v_src, const char* f_src);
 void shader_delete(Shader id);

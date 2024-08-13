@@ -60,19 +60,19 @@ typedef enum {
 
 
 // Declaring all the results for basic types
-DECLARE_RESULT(u8, u8);
-DECLARE_RESULT(u16, u16);
-DECLARE_RESULT(u32, u32);
-DECLARE_RESULT(u64, u64);
+RESULT(u8, u8);
+RESULT(u16, u16);
+RESULT(u32, u32);
+RESULT(u64, u64);
 
-DECLARE_RESULT(i8, i8);
-DECLARE_RESULT(i16, i16);
-DECLARE_RESULT(i32, i32);
-DECLARE_RESULT(i64, i64);
+RESULT(i8, i8);
+RESULT(i16, i16);
+RESULT(i32, i32);
+RESULT(i64, i64);
 
-DECLARE_RESULT(f32, f32);
-DECLARE_RESULT(f64, f64);
+RESULT(f32, f32);
+RESULT(f64, f64);
 
-DECLARE_RESULT(b32, b32);
+RESULT(b32, b32);
 
 #endif // __DEFINES_H__

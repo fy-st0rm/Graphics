@@ -12,7 +12,7 @@ typedef struct {
 	b32 should_close;
 } Window;
 
-DECLARE_RESULT(Window, Window);
+RESULT(Window, Window);
 
 Result_Window window_new(const char* title, u32 width, u32 height);
 void window_delete(Window window);

@@ -1,7 +1,5 @@
 #include "shader.h"
 
-DEFINE_RESULT(Shader, Shader);
-
 Result_Shader shader_new(const char* v_src, const char* f_src) {
 	u32 program = glCreateProgram();
 
@@ -9,18 +7,14 @@ Result_Shader shader_new(const char* v_src, const char* f_src) {
 	Result_u32 rfs = shader_compile(GL_FRAGMENT_SHADER, f_src);
 
 	if (rvs.status == ERROR) {
-		return Result_Shader_err(
-			Result_u32_unwrap_err(rvs)
-		);
+		return ERR(Shader, unwrap_err(rvs));
 	}
 	if (rfs.status == ERROR) {
-		return Result_Shader_err(
-			Result_u32_unwrap_err(rfs)
-		);
+		return ERR(Shader, unwrap_err(rfs));
 	}
 
-	u32 vs = Result_u32_unwrap(rvs);
-	u32 fs = Result_u32_unwrap(rfs);
+	u32 vs = unwrap(rvs);
+	u32 fs = unwrap(rfs);
 
 	// Attaching shader
 	GLCall(glAttachShader(program, vs));
@@ -31,7 +25,7 @@ Result_Shader shader_new(const char* v_src, const char* f_src) {
 	GLCall(glDeleteShader(vs));
 	GLCall(glDeleteShader(fs));
 
-	return Result_Shader_ok(program);
+	return OK(Shader, program);
 }
 
 void shader_delete(Shader id) {
@@ -59,7 +53,7 @@ Result_u32 shader_compile(Shader_Type type, const char* shader_src) {
 			(type == GL_VERTEX_SHADER ? "Vertex" : "Fragment"), message
 		);
 
-		return Result_u32_err(buffer);
+		return ERR(u32, buffer);
 	}
-	return Result_u32_ok(id);
+	return OK(u32, id);
 }

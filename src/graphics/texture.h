@@ -8,7 +8,7 @@ typedef struct {
 	u32 id, width, height;
 } Texture;
 
-DECLARE_RESULT(Texture, Texture);
+RESULT(Texture, Texture);
 
 // TODO: Implement control over texture filters
 // Filters are hard coded for now

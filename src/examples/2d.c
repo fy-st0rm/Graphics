@@ -12,10 +12,10 @@ typedef enum {
 } Direction;
 
 int main() {
-	Window window = Result_Window_unwrap(
+	Window window = unwrap(
 		window_new("3D", WIN_WIDTH, WIN_HEIGHT)
 	);
-	IMR imr = Result_IMR_unwrap(imr_new());
+	IMR imr = unwrap(imr_new());
 
 	PCamera cam = pcamera_new(
 		(v3) { 0.05, -0.3, 2.4 },
@@ -31,7 +31,7 @@ int main() {
 	b32 movement[TOTAL];
 
 	// Backgrounds
-	Texture bg_1 = Result_Texture_unwrap(
+	Texture bg_1 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/background/background_layer_1.png",
 			true
@@ -39,7 +39,7 @@ int main() {
 	);
 	texture_bind(bg_1);
 
-	Texture bg_2 = Result_Texture_unwrap(
+	Texture bg_2 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/background/background_layer_2.png",
 			true
@@ -47,7 +47,7 @@ int main() {
 	);
 	texture_bind(bg_2);
 
-	Texture bg_3 = Result_Texture_unwrap(
+	Texture bg_3 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/background/background_layer_3.png",
 			true
@@ -56,7 +56,7 @@ int main() {
 	texture_bind(bg_3);
 
 	// Ground
-	Texture ground = Result_Texture_unwrap(
+	Texture ground = unwrap(
 		texture_from_file(
 			"assets/oak_woods/background/ground.png",
 			true
@@ -65,7 +65,7 @@ int main() {
 	texture_bind(ground);
 
 	// Fence
-	Texture fence = Result_Texture_unwrap(
+	Texture fence = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/fence_1.png",
 			true
@@ -74,7 +74,7 @@ int main() {
 	texture_bind(fence);
 
 	// Shop
-	Texture shop = Result_Texture_unwrap(
+	Texture shop = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/shop.png",
 			true
@@ -83,7 +83,7 @@ int main() {
 	texture_bind(shop);
 
 	// Grass
-	Texture grass_1 = Result_Texture_unwrap(
+	Texture grass_1 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/grass_1.png",
 			true
@@ -91,7 +91,7 @@ int main() {
 	);
 	texture_bind(grass_1);
 
-	Texture grass_2 = Result_Texture_unwrap(
+	Texture grass_2 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/grass_2.png",
 			true
@@ -99,7 +99,7 @@ int main() {
 	);
 	texture_bind(grass_2);
 
-	Texture grass_3 = Result_Texture_unwrap(
+	Texture grass_3 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/grass_3.png",
 			true
@@ -108,7 +108,7 @@ int main() {
 	texture_bind(grass_3);
 
 	// Lamp
-	Texture lamp = Result_Texture_unwrap(
+	Texture lamp = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/lamp.png",
 			true
@@ -117,7 +117,7 @@ int main() {
 	texture_bind(lamp);
 
 	// Rock
-	Texture rock_3 = Result_Texture_unwrap(
+	Texture rock_3 = unwrap(
 		texture_from_file(
 			"assets/oak_woods/decorations/rock_3.png",
 			true
@@ -126,7 +126,7 @@ int main() {
 	texture_bind(rock_3);
 
 	// Player
-	Texture pl_tex = Result_Texture_unwrap(
+	Texture pl_tex = unwrap(
 		texture_from_file("assets/oak_woods/character/char_blue.png", true)
 	);
 	texture_bind(pl_tex);

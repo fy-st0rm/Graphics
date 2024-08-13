@@ -7,7 +7,7 @@ typedef enum {
 	OK, ERROR
 } ResultStatus;
 
-#define DECLARE_RESULT(name, V)                               \
+#define RESULT(name, V)                                       \
 	typedef struct {                                            \
 		ResultStatus status;                                      \
 		union {                                                   \
@@ -15,41 +15,36 @@ typedef enum {
 			const char* error;                                      \
 		} __value;                                                \
 	} Result_##name;                                            \
-	Result_##name Result_##name##_ok(V v);                      \
-	Result_##name Result_##name##_err(const char* e);           \
-	V Result_##name##_unwrap(Result_##name res);                \
-	V Result_##name##_unwrap_or(Result_##name res, V x);        \
-	const char* Result_##name##_unwrap_err(Result_##name res);  \
 
-#define DEFINE_RESULT(name, V)                                \
-	Result_##name Result_##name##_ok(V v) {                     \
-		return (Result_##name) {                                  \
-			.status = OK,                                           \
-			.__value.result = v                                     \
-		};                                                        \
-	}                                                           \
-                                                              \
-	Result_##name Result_##name##_err(const char* e) {          \
-		return (Result_##name) {                                  \
-			.status = ERROR,                                        \
-			.__value.error = e                                      \
-		};                                                        \
-	}                                                           \
-                                                              \
-	V Result_##name##_unwrap(Result_##name res) {               \
-		if (res.status == OK) return res.__value.result;          \
-		assert(0, "%s\n", res.__value.error);                     \
-	}                                                           \
-                                                              \
-	V Result_##name##_unwrap_or(Result_##name res, V x) {       \
-		if (res.status == OK) return res.__value.result;          \
-		return x;                                                 \
-	}                                                           \
-	                                                            \
-	const char* Result_##name##_unwrap_err(Result_##name res) { \
-		if (res.status == ERROR) return res.__value.error;        \
-		assert(0, "Result was not an error\n");                   \
-	}                                                           \
+#define OK(res_name, ...) ({                                  \
+	(Result_##res_name) {                                       \
+		.status = OK,                                             \
+		.__value.result = (__VA_ARGS__)                           \
+	};                                                          \
+})                                                            \
+
+#define ERR(res_name, e) ({                                   \
+	(Result_##res_name) {                                       \
+		.status = ERROR,                                          \
+		.__value.error = e                                        \
+	};                                                          \
+})                                                            \
+
+#define unwrap(res) ({                                        \
+	assert(res.status == OK, "%s\n", res.__value.error);        \
+	res.__value.result;                                         \
+})                                                            \
+
+#define unwrap_or(res, x) ({                                  \
+	r = x;                                                      \
+	if (res.status == OK) r = res.__value.result;               \
+	r;                                                          \
+})                                                            \
+
+#define unwrap_err(res) ({                                    \
+	assert(res.status == ERROR, "Result was not an error\n");   \
+	res.__value.error;                                          \
+})                                                            \
 
 
 #endif // __RESULT_H__

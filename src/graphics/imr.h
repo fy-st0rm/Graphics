@@ -38,7 +38,7 @@ typedef struct {
 	Texture white;
 } IMR;
 
-DECLARE_RESULT(IMR, IMR);
+RESULT(IMR, IMR);
 
 Result_IMR imr_new();
 void imr_delete(IMR* imr);

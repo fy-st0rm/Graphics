@@ -1,10 +1,8 @@
 #include "window.h"
 
-DEFINE_RESULT(Window, Window);
-
 Result_Window window_new(const char* title, u32 width, u32 height) {
 	if (!glfwInit())
-		return Result_Window_err("Failed to initialize glfw");
+		return ERR(Window, "Failed to initialize glfw");
 
 	glfwWindowHint(GLFW_RESIZABLE, GLFW_FALSE);
 	GLFWwindow* glfw_window = glfwCreateWindow(
@@ -13,16 +11,16 @@ Result_Window window_new(const char* title, u32 width, u32 height) {
 	);
 
 	if (!glfw_window)
-		return Result_Window_err("Failed to create glfw window");
+		return ERR(Window, "Failed to create glfw window");
 
 	glfwMakeContextCurrent(glfw_window);
 
 	if (glewInit() != GLEW_OK)
-		return Result_Window_err("Failed to initialize glew");
+		return ERR(Window, "Failed to initialize glew");
 
 	b32 should_close = glfwWindowShouldClose(glfw_window);
 
-	return Result_Window_ok((Window) {
+	return OK(Window, (Window) {
 		.glfw_window = glfw_window,
 		.width = width,
 		.height = height,

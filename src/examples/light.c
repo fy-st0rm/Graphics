@@ -277,17 +277,15 @@ typedef struct {
 
 int main(int argc, char** argv) {
 	// Window
-	Window window = Result_Window_unwrap(
-		window_new("Light", WIN_WIDTH, WIN_HEIGHT)
-	);
+	Window window = unwrap(window_new("Light", WIN_WIDTH, WIN_HEIGHT));
 
 	// Creating custom shader
-	Shader color_shader = Result_Shader_unwrap(shader_new(vertex_src, fragment_src));
-	Shader light_shader = Result_Shader_unwrap(shader_new(light_vertex_src, light_fragment_src));
-	Shader mix_shader = Result_Shader_unwrap(shader_new(light_vertex_src, mix_fragment_src));
+	Shader color_shader = unwrap(shader_new(vertex_src, fragment_src));
+	Shader light_shader = unwrap(shader_new(light_vertex_src, light_fragment_src));
+	Shader mix_shader = unwrap(shader_new(light_vertex_src, mix_fragment_src));
 
 	// Renderer
-	IMR imr = Result_IMR_unwrap(imr_new());
+	IMR imr = unwrap(imr_new());
 
 	// Camera
 	OCamera cam = ocamera_new(

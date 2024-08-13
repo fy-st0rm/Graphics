@@ -3,15 +3,13 @@
 #include "GL/glew.h"
 #include "core/log.h"
 
-DEFINE_RESULT(Texture, Texture);
-
 Result_Texture texture_from_file(const char* filepath, b32 flip) {
 	stbi_set_flip_vertically_on_load(flip);
 
 	i32 w, h, c;
 	u8* data = stbi_load(filepath, &w, &h, &c, 0);
 	if (!data) {
-		return Result_Texture_err("Failed to load texture file");
+		return ERR(Texture, "Failed to load texture file");
 	}
 
 	// Binding the texture
@@ -33,14 +31,14 @@ Result_Texture texture_from_file(const char* filepath, b32 flip) {
 		stbi_image_free(data);
 	}
 
-	return Result_Texture_ok((Texture) {
+	return OK(Texture, (Texture) {
 		id, w, h
 	});
 }
 
 Result_Texture texture_from_data(u32 width, u32 height, u32* data) {
 	if (!data) {
-		return Result_Texture_err("Cannot create texture from null data");
+		return ERR(Texture, "Cannot create texture from null data");
 	}
 
 	u32 id;
@@ -57,7 +55,7 @@ Result_Texture texture_from_data(u32 width, u32 height, u32* data) {
 	GLCall(glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data));
 	GLCall(glBindTexture(GL_TEXTURE_2D, 0));
 
-	return Result_Texture_ok((Texture) {
+	return OK(Texture, (Texture) {
 		id, width, height
 	});
 }

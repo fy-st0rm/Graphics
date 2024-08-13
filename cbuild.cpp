@@ -110,12 +110,39 @@ void build_light(int argc, char** argv) {
 		.run(argv);
 }
 
+void build_game(int argc, char** argv) {
+	CBuild cbuild("gcc");
+	cbuild
+		.out("bin", "game")
+		.inc_paths({
+			"src/",
+			"src/external/glew/include/",
+			"src/external/glfw/include/",
+			"src/external/stb/"
+		})
+		.lib_paths({
+			"bin/",
+		})
+#ifdef _WIN32
+		.libs({"mingw32", "enigne", "glu32", "opengl32", "User32", "Gdi32", "Shell32", "m"})
+#elif defined(__linux__)
+		.libs({"engine", "GL", "GLU", "m"})
+#endif
+		.src({
+			"src/game/main.c",
+		})
+		.build()
+		.clean()
+		.run(argv);
+}
+
 void print_usage() {
 	std::cout << "[Usage]: ./cbuild [options]" << std::endl;
 	std::cout << "\tengine: Builds engine\n";
 	std::cout << "\tiso: Builds isometric example\n";
 	std::cout << "\t2d: Builds 2D example\n";
 	std::cout << "\tlight: Builds light example\n";
+	std::cout << "\tgame: Builds game\n";
 }
 
 int main(int argc, char** argv) {
@@ -136,6 +163,8 @@ int main(int argc, char** argv) {
 			build_2d(argc, argv);
 		else if (arg == "light")
 			build_light(argc, argv);
+		else if (arg == "game")
+			build_game(argc, argv);
 		else
 			print_usage();
 	}

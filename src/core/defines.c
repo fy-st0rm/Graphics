@@ -35,19 +35,3 @@ STATIC_ASSERT(sizeof(f64) == 8, "Expected f64 to be 8 bytes.");
 /** @brief Assert b32 to be 4 bytes.*/
 STATIC_ASSERT(sizeof(b32) == 4, "Expected b32 to be 4 bytes.");
 
-
-// Defining the results for basic types
-DEFINE_RESULT(u8, u8);
-DEFINE_RESULT(u16, u16);
-DEFINE_RESULT(u32, u32);
-DEFINE_RESULT(u64, u64);
-
-DEFINE_RESULT(i8, i8);
-DEFINE_RESULT(i16, i16);
-DEFINE_RESULT(i32, i32);
-DEFINE_RESULT(i64, i64);
-
-DEFINE_RESULT(f32, f32);
-DEFINE_RESULT(f64, f64);
-
-DEFINE_RESULT(b32, b32);

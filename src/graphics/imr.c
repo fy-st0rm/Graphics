@@ -1,7 +1,5 @@
 #include "imr.h"
 
-DEFINE_RESULT(IMR, IMR);
-
 const char* v_src =
 	"#version 440 core\n"
 	"layout (location = 0) in vec3 position;\n"
@@ -63,16 +61,16 @@ Result_IMR imr_new() {
 
 	// Generating white texture
 	u32 data = 0xffffffff;
-	Texture white = Result_Texture_unwrap(texture_from_data(1, 1, &data));
+	Texture white = unwrap(texture_from_data(1, 1, &data));
 	texture_bind(white);
 
 	// Shader
 	Result_Shader rs = shader_new(v_src, f_src);
 	if (rs.status == ERROR) {
-		return Result_IMR_err(Result_Shader_unwrap_err(rs));
+		return ERR(IMR, unwrap_err(rs));
 	}
 
-	shader = Result_Shader_unwrap(rs);
+	shader = unwrap(rs);
 	GLCall(glUseProgram(shader));
 
 	// Providing texture samples
@@ -85,7 +83,7 @@ Result_IMR imr_new() {
 	assert(loc != -1, "Cannot find uniform: textures\n");
 	GLCall(glUniform1iv(loc, TEXTURE_SAMPLE_AMT, samplers));
 
-	return Result_IMR_ok((IMR) {
+	return OK(IMR, (IMR) {
 		.vao = vao,
 		.vbo = vbo,
 		.shader = shader,
