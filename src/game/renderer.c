@@ -9,28 +9,10 @@ Result_Renderer renderer_new(ECS* ecs, v2 surf_size, v2 win_size) {
 	}
 
 	// Setting up cameras
-	PCamera ren_cam = pcamera_new(
-		(v3) { 0, 0, 1 },
-		(v3) { 0, 0, -1 },
-		0.1f,
-		(PCamera_Info) {
-			.aspect_ratio = (f32) surf_size.x / surf_size.y,
-			.fov = 45.0f,
-			.near = 0.0f,
-			.far = 1000.0f
-		}
-	);
-
-	PCamera final_cam = pcamera_new(
-		(v3) { 0, 0, 1 },
-		(v3) { 0, 0, -1 },
-		0.1f,
-		(PCamera_Info) {
-			.aspect_ratio = (f32) win_size.x / win_size.y,
-			.fov = 45.0f,
-			.near = 0.0f,
-			.far = 1000.0f
-		}
+	OCamera final_cam = ocamera_new(
+		(v2) { 0, 0 },
+		1.0f,
+		(OCamera_Boundary) { 0, win_size.x, win_size.y, 0, -1, 1000 }
 	);
 
 	// Setting up frame buffers
@@ -52,7 +34,6 @@ Result_Renderer renderer_new(ECS* ecs, v2 surf_size, v2 win_size) {
 	return OK(Renderer, (Renderer) {
 		.imr = unwrap(r_imr),
 		.ecs = ecs,
-		.ren_cam = ren_cam,
 		.final_cam = final_cam,
 		.surf_size = surf_size,
 		.win_size = win_size,
@@ -69,7 +50,7 @@ void renderer_delete(Renderer* ren) {
 	fbo_delete(&ren->mix_fbo);
 }
 
-void renderer_update(Renderer* ren, v4 color) {
+void renderer_update(Renderer* ren, OCamera* camera, v4 color) {
 	// Color pass
 	{
 		glViewport(0, 0, ren->surf_size.x, ren->surf_size.y);
@@ -78,7 +59,7 @@ void renderer_update(Renderer* ren, v4 color) {
 		imr_clear(color);
 		imr_begin(&ren->imr);
 	
-		m4 mvp = pcamera_calc_mvp(&ren->ren_cam);
+		m4 mvp = ocamera_calc_mvp(camera);
 		imr_update_mvp(&ren->imr, mvp);
 	
 		CompRecord* cr = comp_table_get_record(ren->ecs->table, RenderComponent);
@@ -111,7 +92,7 @@ void renderer_update(Renderer* ren, v4 color) {
 		imr_clear((v4) {0, 0, 0, 1});
 		imr_begin(&ren->imr);
 	
-		m4 mvp = pcamera_calc_mvp(&ren->final_cam);
+		m4 mvp = ocamera_calc_mvp(&ren->final_cam);
 		imr_update_mvp(&ren->imr, mvp);
 
 		Texture texture_to_render = ren->color_fbo.color_texture;
@@ -119,8 +100,8 @@ void renderer_update(Renderer* ren, v4 color) {
 	
 		imr_push_quad_tex(
 			&ren->imr,
-			(v3) {-1, -1, 0},
-			(v2) {2, 2},
+			(v3) {0, 0, 0},
+			ren->win_size,
 			(Rect) {0, 0, 1, 1},
 			texture_to_render.id,
 			rotate_z(0),
