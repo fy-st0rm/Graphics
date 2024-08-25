@@ -2,6 +2,7 @@
 #define __MATH_UTILS_H__
 
 #include "core/defines.h"
+#include "vec.h"
 
 #include <stdlib.h>
 #include <math.h>

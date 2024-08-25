@@ -37,10 +37,6 @@ Result_Texture texture_from_file(const char* filepath, b32 flip) {
 }
 
 Result_Texture texture_from_data(u32 width, u32 height, u32* data) {
-	if (!data) {
-		return ERR(Texture, "Cannot create texture from null data");
-	}
-
 	u32 id;
 	GLCall(glGenTextures(1, &id));
 	GLCall(glBindTexture(GL_TEXTURE_2D, id));

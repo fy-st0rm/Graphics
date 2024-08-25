@@ -23,7 +23,9 @@ void build_engine() {
 			"src/math/mat.c",
 			"src/graphics/shader.c",
 			"src/graphics/texture.c",
+			"src/graphics/fbo.c",
 			"src/graphics/imr.c",
+			"src/ecs/ecs.c",
 			"src/event/event.c",
 			"src/camera/camera.c",
 			"src/window/window.c",
@@ -129,6 +131,7 @@ void build_game(int argc, char** argv) {
 		.libs({"engine", "GL", "GLU", "m"})
 #endif
 		.src({
+			"src/game/renderer.c",
 			"src/game/main.c",
 		})
 		.build()

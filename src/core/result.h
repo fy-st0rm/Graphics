@@ -31,19 +31,22 @@ typedef enum {
 })                                                            \
 
 #define unwrap(res) ({                                        \
-	assert(res.status == OK, "%s\n", res.__value.error);        \
-	res.__value.result;                                         \
+	__typeof__(res) r = res;                                    \
+	assert(r.status == OK, "%s\n", r.__value.error);            \
+	r.__value.result;                                           \
 })                                                            \
 
 #define unwrap_or(res, x) ({                                  \
-	r = x;                                                      \
-	if (res.status == OK) r = res.__value.result;               \
-	r;                                                          \
+	__typeof__(res) r = res;                                    \
+	__typeof__(r.__value.result) v = x;                         \
+	if (r.status == OK) v = res.__value.result;                 \
+	v;                                                          \
 })                                                            \
 
 #define unwrap_err(res) ({                                    \
-	assert(res.status == ERROR, "Result was not an error\n");   \
-	res.__value.error;                                          \
+	__typeof__(res) r = res;                                    \
+	assert(r.status == ERROR, "Result was not an error\n");     \
+	r.__value.error;                                            \
 })                                                            \
 
 
