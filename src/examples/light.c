@@ -446,7 +446,7 @@ int main(int argc, char** argv) {
 				},
 				size,
 				rotate_z(0),
-				(v4) { 0.3, 0.5, 0.5, 1 }
+				(v4) { 0, 1, 0, 1 }
 			);
 
 			imr_end(&imr);

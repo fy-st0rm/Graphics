@@ -7,12 +7,13 @@ Result_FBO fbo_new(u32 width, u32 height) {
 	GLCall(glGenFramebuffers(1, &id));
 	GLCall(glBindFramebuffer(GL_FRAMEBUFFER, id));
 
-	Result_Texture r_tex = texture_from_data(width, height, NULL);
-	if (r_tex.status == ERROR) {
-		return ERR(FBO, unwrap_err(r_tex));
+	// Color texture
+	Result_Texture r_color_tex = texture_from_data(width, height, NULL);
+	if (r_color_tex.status == ERROR) {
+		return ERR(FBO, unwrap_err(r_color_tex));
 	}
 
-	Texture color_texture = unwrap(r_tex);
+	Texture color_texture = unwrap(r_color_tex);
 	GLCall(glFramebufferTexture2D(
 		GL_FRAMEBUFFER, GL_COLOR_ATTACHMENT0,
 		GL_TEXTURE_2D, color_texture.id, 0
@@ -31,7 +32,7 @@ Result_FBO fbo_new(u32 width, u32 height) {
 
 	return OK(FBO, (FBO) {
 		.id = id,
-		.color_texture = color_texture
+		.color_texture = color_texture,
 	});
 }
 
