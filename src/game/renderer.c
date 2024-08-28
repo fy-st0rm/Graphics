@@ -161,9 +161,9 @@ void renderer_push_light_uniforms(Renderer* ren) {
 	}
 }
 
-
 void renderer_color_pass(Renderer* ren, OCamera* camera, v4 color) {
 	imr_switch_shader(&ren->imr, ren->color_shader);
+	imr_reapply_samplers(&ren->imr);
 
 	glViewport(0, 0, ren->surf_size.x, ren->surf_size.y);
 	fbo_bind(&ren->color_fbo);
@@ -188,10 +188,12 @@ void renderer_color_pass(Renderer* ren, OCamera* camera, v4 color) {
 				RenderComponent* rc = entry->data;
 				TransformComponent* tc = entity_get_component(ren->ecs, ent, TransformComponent);
 	
-				imr_push_quad(
+				imr_push_quad_tex(
 					&ren->imr,
 					tc->pos,
 					tc->size,
+					rc->tex_coord,
+					rc->texture.id,
 					rotate_z(0),
 					rc->color
 				);
@@ -229,6 +231,7 @@ void renderer_light_pass(Renderer* ren, OCamera* camera, v4 color) {
 	imr_end(&ren->imr);
 	fbo_unbind();
 }
+
 void renderer_mix_pass(Renderer* ren, OCamera* camera, v4 color) {
 	imr_switch_shader(&ren->imr, ren->mix_shader);
 

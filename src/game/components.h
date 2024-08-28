@@ -1,6 +1,8 @@
 #ifndef __COMPONENTS_H__
 #define __COMPONENTS_H__
 
+#include "graphics/texture.h"
+
 typedef struct {
 	v3 pos;
 	v2 size;
@@ -8,6 +10,8 @@ typedef struct {
 
 typedef struct {
 	v4 color;
+	Texture texture;
+	Rect tex_coord;
 } RenderComponent;
 
 typedef struct {

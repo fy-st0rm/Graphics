@@ -53,6 +53,7 @@ static const char* color_fragment_src = SHADER_SRC(
 	uniform vec2 dim;
 	uniform Light light[MAX_LIGHT_CAP];
 	uniform int light_cnt;
+	uniform sampler2D textures[32];
 
 	vec2 rotate(vec2 v, float angle) {
 		float cosAngle = cos(angle);
@@ -65,7 +66,8 @@ static const char* color_fragment_src = SHADER_SRC(
 
 	void main() {
 		vec4 final_color = vec4(0,0,0,1);
-		vec4 final_light_color = vec4(0,0,0,1);
+		int idx = int(o_tex_id);
+		vec4 color = texture(textures[idx], o_tex_coord) * o_color;
 
 		for (int i = 0; i < light_cnt; i++) {
 
@@ -89,7 +91,7 @@ static const char* color_fragment_src = SHADER_SRC(
 			float angle = abs(atan(uv.y - light_norm.y, uv.x - light_norm.x));
 			float angular_fall_off = smoothstep(light[i].fov, 0, angle);
 
-			final_color += o_color
+			final_color += color
 			* light[i].color
 			* light[i].intensity
 			* radial_fall_off
@@ -97,7 +99,7 @@ static const char* color_fragment_src = SHADER_SRC(
 		}
 
 	// TODO: Add proper ambient light
-		color_channel = final_color + o_color * vec4(0.1);
+		color_channel = vec4(final_color.xyz + color.xyz * vec3(0.3), color.w);
 	}
 );
 
@@ -202,7 +204,7 @@ static const char* mix_fragment_src = SHADER_SRC(
 	void main() {
 		vec4 colo_1 = texture(color_texture, o_tex_coord);
 		vec4 colo_2 = texture(light_texture, o_tex_coord);
-		color = colo_1 + colo_2 * 0.5;
+		color = colo_1 + colo_2;
 	}
 );
 

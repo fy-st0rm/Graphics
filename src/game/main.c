@@ -22,8 +22,25 @@ int main(int argc, char** argv) {
 
 	Renderer ren = unwrap(renderer_new(ecs, SURF_SIZE, WIN_SIZE));
 
+	// Loading textures
+	Texture pl_tex = unwrap(
+		texture_from_file(
+			"assets/oak_woods/character/char_blue.png",
+			true
+		)
+	);
+	texture_bind(pl_tex);
+
+	Texture lamp = unwrap(
+		texture_from_file(
+			"assets/oak_woods/decorations/lamp.png",
+			true
+		)
+	);
+	texture_bind(lamp);
+
 	// Entity
-	v2 size = { 20, 20 };
+	v2 size = { 23/1.5, 57/1.5 };
 	Entity ent = entity_new(ecs);
 	entity_add_component(
 		ecs, ent, TransformComponent,
@@ -34,34 +51,58 @@ int main(int argc, char** argv) {
 		},
 		size
 	);
-	entity_add_component(ecs, ent, RenderComponent, (v4) { 0, 1, 0, 1 });
+	entity_add_component(
+		ecs, ent, RenderComponent,
+		(v4) { 1, 1, 1, 1 },
+		lamp,
+		(Rect) { 0, 0, 1, 1 }
+	);
+
+	v2 size2 = { 64, 60 };
+	Entity ent2 = entity_new(ecs);
+	entity_add_component(
+		ecs, ent2, TransformComponent,
+		(v3) {
+			SURF_SIZE.x / 2 - size2.x / 2 - 30,
+			SURF_SIZE.y / 2 - size2.y / 2 - 10,
+			0
+		},
+		size2
+	);
+	entity_add_component(
+		ecs, ent2, RenderComponent,
+		(v4) { 1, 1, 1, 1 },
+		pl_tex,
+		(Rect) { 0, 6.0/7, 1.0f/8, 1.0f/7 },
+	);
 
 	// Light
 	Entity light_1 = entity_new(ecs);
 	entity_add_component(
 		ecs, light_1, LightComponent, 
 		(v2) {
-			SURF_SIZE.x / 2 - 40, SURF_SIZE.y / 2 + 20
+			SURF_SIZE.x / 2 - 5,
+			SURF_SIZE.y / 2 + 10,
 		},
-		1.0f,
-		0.9f,
+		0.5f,
+		1.9f,
 		PI / 2,
-		to_radians(45),
-		(v4){ 1, 0.1, 0.1, 1 }
+		to_radians(90),
+		(v4){ 0.8, 0.5, 0.0, 1 }
 	);
 
-	Entity light_2 = entity_new(ecs);
-	entity_add_component(
-		ecs, light_2, LightComponent, 
-		(v2) {
-			SURF_SIZE.x / 2 + 40, SURF_SIZE.y / 2 + 20
-		},
-		1.0f,
-		0.9f,
-		PI / 2,
-		to_radians(135),
-		(v4){ 0, 0.5, 0.8, 1 }
-	);
+	//Entity light_2 = entity_new(ecs);
+	//entity_add_component(
+	//	ecs, light_2, LightComponent, 
+	//	(v2) {
+	//		SURF_SIZE.x / 2 + 40, SURF_SIZE.y / 2 + 20
+	//	},
+	//	1.0f,
+	//	0.9f,
+	//	PI / 2,
+	//	to_radians(135),
+	//	(v4){ 0, 0.5, 0.8, 1 }
+	//);
 
 
 	float speed = 1.0f;
@@ -69,7 +110,7 @@ int main(int argc, char** argv) {
 
 		// Event
 		{
-			TransformComponent* tc = entity_get_component(ecs, ent, TransformComponent);
+			TransformComponent* tc = entity_get_component(ecs, ent2, TransformComponent);
 			Event event;
 			while(event_poll(window, &event)) {
 				if (event.type == KEYDOWN) {

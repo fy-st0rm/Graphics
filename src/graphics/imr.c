@@ -129,6 +129,20 @@ void imr_switch_shader_to_default(IMR* imr) {
 	imr->shader = imr->def_shader;
 }
 
+void imr_reapply_samplers(IMR* imr) {
+	GLCall(glUseProgram(imr->shader));
+
+	// Providing texture samples
+	u32 samplers[TEXTURE_SAMPLE_AMT];
+	for (u32 i = 0; i < TEXTURE_SAMPLE_AMT; i++)
+		samplers[i] = i;
+	
+	// Providing samplers to the shader
+	int loc = GLCall(glGetUniformLocation(imr->shader, "textures"));
+	assert(loc != -1, "Cannot find uniform: textures\n");
+	GLCall(glUniform1iv(loc, TEXTURE_SAMPLE_AMT, samplers));
+}
+
 void imr_update_mvp(IMR* imr, m4 mvp) {
 	i32 loc = GLCall(glGetUniformLocation(imr->shader, "mvp"));
 	GLCall(glUniformMatrix4fv(loc, 1, GL_TRUE, &mvp.m[0][0]));
