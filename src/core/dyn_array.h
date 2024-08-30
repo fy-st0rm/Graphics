@@ -73,6 +73,12 @@
 		(arr)->data[idx];                                                                                      \
 	})                                                                                                       \
 
+#define dyn_array_get_ref(arr, idx)                                                                            \
+	({                                                                                                       \
+		assert(idx < (arr)->len, "Tried accessing index: %d to an array of length: %d\n", idx, (arr)->len); \
+		&(arr)->data[idx];                                                                                      \
+	})                                                                                                       \
+
 #define dyn_array_pop(arr, idx)                                                                            \
 	({                                                                                                       \
 		assert(idx < (arr)->len, "Tried poping index: %d to an array of length: %d\n", idx, (arr)->len);    \
@@ -114,6 +120,14 @@
 			block                                \
 		}                                      \
 	} while (0)                              \
+
+#define dyn_array_for_each_ref(arr, x, block)  \
+	do {                                         \
+		for (int i = 0; i < (arr)->len; i++) {     \
+			x = dyn_array_get_ref(arr, i);           \
+			block                                    \
+		}                                          \
+	} while (0)                                  \
 
 
 #endif // __DYN_ARRAY_H__

@@ -261,6 +261,28 @@ ECS* ecs_new(u32 max_entity_cnt);
 
 void ecs_delete(ECS* ecs);
 
+/*
+ * @brief Macro to loop through each entity for a given component
+ * @param ecs       = Pointer to ecs struct
+ * @param component = Component to loop through
+ * @param block     = Block of code to be executed
+ * @info Makes variables (entity, entry, comp) visible to be used in block
+ */
+
+#define ecs_for_each_comp(ecs, component, block)\
+	do {\
+		CompRecord* cr = comp_table_get_record(ecs->table, component);\
+		if (cr != NULL) {\
+			for (int i = 0; i < cr->entry_cnt; i++) {\
+				Entity entity = cr->entries_ent[i];\
+				CompEntry* entry = comp_record_get_entry(cr, entity);\
+				component* comp = entry->data;\
+				block;\
+			}\
+		}\
+	} while (0)\
+
+
 
 /* =======================
  * Entity Commands
@@ -327,7 +349,7 @@ void __entity_remove_component(ECS* ecs, Entity ent, char* name);
 
 #define entity_add_component(ecs, ent, comp, ...)   \
 	({                                                    \
-		comp c = { __VA_ARGS__ };                           \
+		comp c = __VA_ARGS__;                           \
 		comp* cp = alloc(sizeof(c));                    \
 		memcpy(cp, &c, sizeof(c));                          \
 		__entity_add_component(ecs, ent, #comp, cp);    \

@@ -135,6 +135,7 @@ void build_game(int argc, char** argv) {
 #endif
 		.src({
 			"src/game/renderer.c",
+			"src/game/components.c",
 			"src/game/main.c",
 		})
 		.build()

@@ -3,6 +3,7 @@
 #include "math/vec.h"
 #include "ecs/ecs.h"
 
+#include "components.h"
 #include "renderer.h"
 #include "config.h"
 
@@ -16,33 +17,35 @@ Entity player_init(ECS* ecs) {
 
 	Entity player = entity_new(ecs);
 	entity_add_component(
-		ecs, player, TransformComponent,
-		(v3) {
-			SURF_SIZE.x / 2 - PLAYER_SIZE.x / 2 - 30,
-			SURF_SIZE.y / 2 - PLAYER_SIZE.y / 2 - 10,
-			0
-		},
-		PLAYER_SIZE
+		ecs, player, TransformComponent, {
+			(v3) {
+				SURF_SIZE.x / 2 - PLAYER_SIZE.x / 2 - 30,
+				SURF_SIZE.y / 2 - PLAYER_SIZE.y / 2 - 10,
+				0
+			},
+			PLAYER_SIZE
+		}
 	);
 	entity_add_component(
-		ecs, player, RenderComponent,
-		(v4) { 1, 1, 1, 1 },
-		player_sprite,
-		(Rect) { 0, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT },
+		ecs, player, RenderComponent, {
+			(v4) { 1, 1, 1, 1 },
+			player_sprite,
+			(Rect) { 0, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT },
+		}
 	);
 
 	Dyn_Array(Rect) idle_frames = NULL;
-	for (i32 i = 0; i < 8; i++) {
+	for (i32 i = 0; i < 14; i++) {
 		dyn_array_append(
 			idle_frames,
-			(Rect) { i, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT }
+			(Rect) { (f32)i / PLAYER_SPRITE_X_CNT, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT }
 		);
 	}
 
 	AnimationEntry idle_entry = {
 		.id = IDLE,
 		.frames = (void*) idle_frames,
-		.speed = 100.0f
+		.duration= 100.0f * 14
 	};
 
 	Dyn_Array(AnimationEntry) entries = NULL;
@@ -51,7 +54,7 @@ Entity player_init(ECS* ecs) {
 	entity_add_component(
 		ecs, player,
 		AnimationComponent,
-		(void*) entries
+		make_animation_component((void*) entries, IDLE)
 	);
 
 	return player;

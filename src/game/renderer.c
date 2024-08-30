@@ -177,28 +177,29 @@ void renderer_color_pass(Renderer* ren, OCamera* camera, v4 color) {
 	// Handling light
 	renderer_push_light_uniforms(ren);
 
+	// Handling animation component
+	{
+		ecs_for_each_comp(ren->ecs, AnimationComponent, {
+			Rect r = ac_get_frame(comp);
+			RenderComponent* rc = entity_get_component(ren->ecs, entity, RenderComponent);
+			rc->tex_coord = r;
+		});
+	}
+
 	// Handling render component
 	{
-		CompRecord* cr = comp_table_get_record(ren->ecs->table, RenderComponent);
-		if (cr != NULL) {
-			for (int i = 0; i < cr->entry_cnt; i++) {
-				Entity ent = cr->entries_ent[i];
-	
-				CompEntry* entry = comp_record_get_entry(cr, ent);
-				RenderComponent* rc = entry->data;
-				TransformComponent* tc = entity_get_component(ren->ecs, ent, TransformComponent);
-	
-				imr_push_quad_tex(
-					&ren->imr,
-					tc->pos,
-					tc->size,
-					rc->tex_coord,
-					rc->texture.id,
-					rotate_z(0),
-					rc->color
-				);
-			}
-		}
+		ecs_for_each_comp(ren->ecs, RenderComponent, {
+			TransformComponent* tc = entity_get_component(ren->ecs, entity, TransformComponent);
+			imr_push_quad_tex(
+				&ren->imr,
+				tc->pos,
+				tc->size,
+				comp->tex_coord,
+				comp->texture.id,
+				rotate_z(0),
+				comp->color
+			);
+		});
 	}
 
 	imr_end(&ren->imr);

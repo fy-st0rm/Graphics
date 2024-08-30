@@ -1,9 +1,11 @@
 #ifndef __COMPONENTS_H__
 #define __COMPONENTS_H__
 
+#include "window/window.h"
 #include "core/dyn_array.h"
 #include "graphics/texture.h"
 #include "math/rect.h"
+#include "math/vec.h"
 
 typedef struct {
 	v3 pos;
@@ -28,15 +30,18 @@ typedef struct {
 typedef struct {
 	i32 id;
 	Dyn_Array(Rect) frames;
-	f32 speed;
+	f32 duration;
 } AnimationEntry;
 
+// TODO: Transfer this entries from dynamic array to a hash map
 typedef struct {
 	Dyn_Array(AnimationEntry) entries;
 	i32 curr_state;
+	f64 start_time;
 } AnimationComponent;
 
+AnimationComponent make_animation_component(void* entries, i32 starting_state);
 void ac_switch_frame(AnimationComponent* ac, i32 id);
-void ac_get_frame(AnimationComponent* ac);
+Rect ac_get_frame(AnimationComponent* ac);
 
 #endif // __COMPONENTS_H__
