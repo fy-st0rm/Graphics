@@ -3,6 +3,7 @@
 
 #include "defines.h"
 #include "log.h"
+#include "alloc.h"
 
 #include <stdlib.h>
 #include <string.h>
@@ -21,22 +22,22 @@
 #define dyn_array_delete(arr) \
 	do {                        \
 		if ((arr)) {              \
-			free((arr)->data);   \
-			free((arr));         \
+			clean((arr)->data);   \
+			clean((arr));         \
 		}                         \
 	} while (0)                 \
 
 #define dyn_array_check_cap(arr)                                     \
 	do {                                                               \
 		if ((arr)->len >= (arr)->cap) {                                  \
-			void* tmp = malloc(sizeof((arr)->dummy) * (arr)->len);       \
+			void* tmp = alloc(sizeof((arr)->dummy) * (arr)->len);       \
 			memcpy(tmp, (arr)->data, sizeof((arr)->dummy) * (arr)->len);   \
-			free((arr)->data);                                             \
+			clean((arr)->data);                                             \
                                                                      \
 			(arr)->cap += DYN_ARR_GROW_RATE * DYN_ARR_MEMORY_CAP;          \
-			(arr)->data = malloc(sizeof((arr)->dummy) * (arr)->cap);     \
+			(arr)->data = alloc(sizeof((arr)->dummy) * (arr)->cap);     \
 			memcpy((arr)->data, tmp, sizeof((arr)->dummy) * (arr)->len);   \
-			free(tmp);                                                  \
+			clean(tmp);                                                  \
 		}                                                                \
 	} while (0)                                                        \
 
@@ -54,16 +55,16 @@
 		cap;                       \
 	})                           \
 
-#define dyn_array_append(arr, val)                                   \
+#define dyn_array_append(arr, ...)                                   \
 	do {                                                               \
 		if ((arr) == NULL) {                                             \
-			(arr) = malloc(sizeof(*(arr)));                              \
+			(arr) = alloc(sizeof(*(arr)));                              \
 			(arr)->len = 0;                                                \
 			(arr)->cap = DYN_ARR_MEMORY_CAP;                               \
-			(arr)->data = malloc(sizeof((arr)->dummy) * (arr)->cap);     \
+			(arr)->data = alloc(sizeof((arr)->dummy) * (arr)->cap);     \
 		}                                                                \
 		dyn_array_check_cap(arr);                                        \
-		(arr)->data[(arr)->len++] = (val);                                 \
+		(arr)->data[(arr)->len++] = (__VA_ARGS__);                                 \
 	} while (0)                                                        \
 
 #define dyn_array_get(arr, idx)                                                                            \

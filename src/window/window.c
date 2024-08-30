@@ -1,6 +1,12 @@
 #include "window.h"
+#include "core/ctx.h"
+
+Context* ctx;
 
 Result_Window window_new(const char* title, u32 width, u32 height) {
+	// Creating a new context
+	ctx = ctx_new();
+
 	if (!glfwInit())
 		return ERR(Window, "Failed to initialize glfw");
 
@@ -29,6 +35,7 @@ Result_Window window_new(const char* title, u32 width, u32 height) {
 }
 
 void window_delete(Window window) {
+	ctx_delete(ctx);
 	glfwDestroyWindow(window.glfw_window);
 }
 

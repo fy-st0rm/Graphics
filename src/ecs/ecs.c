@@ -7,15 +7,15 @@
 
 
 CompEntry* comp_entry_new(Entity ent, void* data) {
-	CompEntry* entry = malloc(sizeof(CompEntry));
+	CompEntry* entry = alloc(sizeof(CompEntry));
 	entry->ent = ent;
 	entry->data = data;
 	return entry;
 }
 
 void comp_entry_delete(CompEntry* entry) {
-	free(entry->data);
-	free(entry);
+	clean(entry->data);
+	clean(entry);
 }
 
 
@@ -26,15 +26,15 @@ void comp_entry_delete(CompEntry* entry) {
 
 
 CompRecord* comp_record_new(char* name, u32 max_entry_cnt) {
-	CompRecord* rec = malloc(sizeof(CompRecord));
+	CompRecord* rec = alloc(sizeof(CompRecord));
 
 	// Initializing variables
-	rec->entries_ent = malloc(sizeof(Entity) * max_entry_cnt);
-	rec->entries = malloc(sizeof(CompEntry) * max_entry_cnt);
+	rec->entries_ent = alloc(sizeof(Entity) * max_entry_cnt);
+	rec->entries = alloc(sizeof(CompEntry) * max_entry_cnt);
 	rec->entry_cnt = 0;
 	rec->max_entry_cnt = max_entry_cnt;
 
-	rec->name = malloc(strlen(name));
+	rec->name = alloc(strlen(name));
 	strcpy(rec->name, name);
 
 	return rec;
@@ -45,10 +45,10 @@ void comp_record_delete(CompRecord* rec) {
 		CompEntry* entry = rec->entries[i];
 		if (entry) comp_entry_delete(entry);
 	}
-	free(rec->name);
-	free(rec->entries_ent);
-	free(rec->entries);
-	free(rec);
+	clean(rec->name);
+	clean(rec->entries_ent);
+	clean(rec->entries);
+	clean(rec);
 }
 
 b32 comp_record_search(CompRecord* rec, Entity ent) {
@@ -95,10 +95,10 @@ void comp_record_remove_entry(CompRecord* rec, Entity ent) {
 
 
 CompTable* comp_table_new(u32 max_record_cnt) {
-	CompTable* table = malloc(sizeof(CompTable));
+	CompTable* table = alloc(sizeof(CompTable));
 	table->record_cnt = 0;
 	table->max_record_cnt = max_record_cnt;
-	table->records = malloc(sizeof(CompRecord) * max_record_cnt);
+	table->records = alloc(sizeof(CompRecord) * max_record_cnt);
 	return table;
 }
 
@@ -107,8 +107,8 @@ void comp_table_delete(CompTable* table) {
 		CompRecord* rec = table->records[i];
 		comp_record_delete(rec);
 	}
-	free(table->records);
-	free(table);
+	clean(table->records);
+	clean(table);
 }
 
 b32 __comp_table_search(CompTable* table, char* name) {
@@ -143,12 +143,12 @@ CompRecord* __comp_table_get_record(CompTable* table, char* name) {
 
 
 ECS* ecs_new(u32 max_entity_cnt) {
-	ECS* ecs = malloc(sizeof(ECS));
+	ECS* ecs = alloc(sizeof(ECS));
 	ecs->entity_cnt = 0;
 	ecs->max_entity_cnt = max_entity_cnt;
 
-	// mallocating entity slots
-	ecs->slots = malloc(sizeof(EntitySlotState) * max_entity_cnt);
+	// allocating entity slots
+	ecs->slots = alloc(sizeof(EntitySlotState) * max_entity_cnt);
 	memset(ecs->slots, FREE, sizeof(EntitySlotState) * max_entity_cnt);
 
 	// Creating table
@@ -164,8 +164,8 @@ void ecs_delete(ECS* ecs) {
 	}
 
 	comp_table_delete(ecs->table);
-	free(ecs->slots);
-	free(ecs);
+	clean(ecs->slots);
+	clean(ecs);
 }
 
 

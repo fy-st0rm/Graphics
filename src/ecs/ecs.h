@@ -4,6 +4,7 @@
 #include <string.h>
 
 #include "core/defines.h"
+#include "core/alloc.h"
 #include "math/utils.h"
 #include "math/vec.h"
 
@@ -327,7 +328,7 @@ void __entity_remove_component(ECS* ecs, Entity ent, char* name);
 #define entity_add_component(ecs, ent, comp, ...)   \
 	({                                                    \
 		comp c = { __VA_ARGS__ };                           \
-		comp* cp = malloc(sizeof(c));                    \
+		comp* cp = alloc(sizeof(c));                    \
 		memcpy(cp, &c, sizeof(c));                          \
 		__entity_add_component(ecs, ent, #comp, cp);    \
 	})                                                    \

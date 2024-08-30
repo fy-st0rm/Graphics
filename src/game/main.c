@@ -4,11 +4,60 @@
 #include "ecs/ecs.h"
 
 #include "renderer.h"
+#include "config.h"
 
-#define MAX_ENTITY_CNT 100
+typedef enum {
+	IDLE
+} AnimationID;
 
-const v2 WIN_SIZE = { 800, 600 };
-const v2 SURF_SIZE = { 133, 100 };
+Entity player_init(ECS* ecs) {
+	Texture player_sprite = unwrap(texture_from_file(PLAYER_SPRITE, true));
+	texture_bind(player_sprite);
+
+	Entity player = entity_new(ecs);
+	entity_add_component(
+		ecs, player, TransformComponent,
+		(v3) {
+			SURF_SIZE.x / 2 - PLAYER_SIZE.x / 2 - 30,
+			SURF_SIZE.y / 2 - PLAYER_SIZE.y / 2 - 10,
+			0
+		},
+		PLAYER_SIZE
+	);
+	entity_add_component(
+		ecs, player, RenderComponent,
+		(v4) { 1, 1, 1, 1 },
+		player_sprite,
+		(Rect) { 0, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT },
+	);
+
+	Dyn_Array(Rect) idle_frames = NULL;
+	for (i32 i = 0; i < 8; i++) {
+		dyn_array_append(
+			idle_frames,
+			(Rect) { i, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT }
+		);
+	}
+
+	AnimationEntry idle_entry = {
+		.id = IDLE,
+		.frames = (void*) idle_frames,
+		.speed = 100.0f
+	};
+
+	Dyn_Array(AnimationEntry) entries = NULL;
+	dyn_array_append(entries, idle_entry);
+
+	entity_add_component(
+		ecs, player,
+		AnimationComponent,
+		(void*) entries
+	);
+
+	return player;
+}
+
+// Main
 
 int main(int argc, char** argv) {
 	Window window = unwrap(window_new("Game", WIN_SIZE.x, WIN_SIZE.y));
@@ -22,95 +71,14 @@ int main(int argc, char** argv) {
 
 	Renderer ren = unwrap(renderer_new(ecs, SURF_SIZE, WIN_SIZE));
 
-	// Loading textures
-	Texture pl_tex = unwrap(
-		texture_from_file(
-			"assets/oak_woods/character/char_blue.png",
-			true
-		)
-	);
-	texture_bind(pl_tex);
-
-	Texture lamp = unwrap(
-		texture_from_file(
-			"assets/oak_woods/decorations/lamp.png",
-			true
-		)
-	);
-	texture_bind(lamp);
-
-	// Entity
-	v2 size = { 23/1.5, 57/1.5 };
-	Entity ent = entity_new(ecs);
-	entity_add_component(
-		ecs, ent, TransformComponent,
-		(v3) {
-			SURF_SIZE.x / 2 - size.x / 2,
-			SURF_SIZE.y / 2 - size.y / 2,
-			0
-		},
-		size
-	);
-	entity_add_component(
-		ecs, ent, RenderComponent,
-		(v4) { 1, 1, 1, 1 },
-		lamp,
-		(Rect) { 0, 0, 1, 1 }
-	);
-
-	v2 size2 = { 64, 60 };
-	Entity ent2 = entity_new(ecs);
-	entity_add_component(
-		ecs, ent2, TransformComponent,
-		(v3) {
-			SURF_SIZE.x / 2 - size2.x / 2 - 30,
-			SURF_SIZE.y / 2 - size2.y / 2 - 10,
-			0
-		},
-		size2
-	);
-	entity_add_component(
-		ecs, ent2, RenderComponent,
-		(v4) { 1, 1, 1, 1 },
-		pl_tex,
-		(Rect) { 0, 6.0/7, 1.0f/8, 1.0f/7 },
-	);
-
-	// Light
-	Entity light_1 = entity_new(ecs);
-	entity_add_component(
-		ecs, light_1, LightComponent, 
-		(v2) {
-			SURF_SIZE.x / 2 - 5,
-			SURF_SIZE.y / 2 + 10,
-		},
-		0.5f,
-		1.9f,
-		PI / 2,
-		to_radians(90),
-		(v4){ 0.8, 0.5, 0.0, 1 }
-	);
-
-	//Entity light_2 = entity_new(ecs);
-	//entity_add_component(
-	//	ecs, light_2, LightComponent, 
-	//	(v2) {
-	//		SURF_SIZE.x / 2 + 40, SURF_SIZE.y / 2 + 20
-	//	},
-	//	1.0f,
-	//	0.9f,
-	//	PI / 2,
-	//	to_radians(135),
-	//	(v4){ 0, 0.5, 0.8, 1 }
-	//);
-
+	Entity player = player_init(ecs);
 
 	float speed = 1.0f;
 	while (!window.should_close) {
 
 		// Event
 		{
-			TransformComponent* tc = entity_get_component(ecs, ent2, TransformComponent);
+			TransformComponent* tc = entity_get_component(ecs, player, TransformComponent);
 			Event event;
 			while(event_poll(window, &event)) {
 				if (event.type == KEYDOWN) {
@@ -143,10 +111,11 @@ int main(int argc, char** argv) {
 			}
 		}
 
-		renderer_update(&ren, &camera, (v4) { 0, 0, 0, 1 });
+		renderer_update(&ren, &camera, (v4) { 0.5, 0.5, 0.5, 1 });
 		window_update(&window);
 	}
 	
+	ecs_delete(ecs);
 	window_delete(window);
 	return 0;
 }

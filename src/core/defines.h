@@ -56,7 +56,7 @@ typedef enum {
 /*
  * @brief Determines whether the variable has likely a pointer type (but may be triggered false-positive)
  */
-#define IS_POINTER(x) ((sizeof(x) == sizeof(void*)) && __ISO_INTERNAL_CHECK_POINTER(x) ? 1 : 0)
+#define IS_POINTER(x) ((sizeof(x) == sizeof(void*)) && __INTERNAL_CHECK_POINTER(x) ? 1 : 0)
 
 
 // Declaring all the results for basic types

@@ -1,6 +1,7 @@
 #include "event.h"
+#include "core/ctx.h"
 
-static Dyn_Array(Event) events = NULL;
+extern Context* ctx;
 
 void key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mods) {
 	Event event = { 0 };
@@ -15,7 +16,7 @@ void key_callback(GLFWwindow* window, i32 key, i32 scancode, i32 action, i32 mod
 			break;
 	}
 
-	dyn_array_append(events, event);
+	dyn_array_append(ctx->events, event);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
@@ -43,14 +44,14 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 			assert(0, "Unhandled mouse action: %d\n", action);
 	}
 
-	dyn_array_append(events, event);
+	dyn_array_append(ctx->events, event);
 }
 
 void cursor_position_callback(GLFWwindow* window, double xpos, double ypos) {
 	Event event = { 0 };
 	event.e.mouse_pos = (v2) { xpos, ypos };
 	event.type = MOUSE_MOTION;
-	dyn_array_append(events, event);
+	dyn_array_append(ctx->events, event);
 }
 
 i32 event_poll(Window window, Event* event) {
@@ -58,9 +59,9 @@ i32 event_poll(Window window, Event* event) {
 	glfwSetMouseButtonCallback(window.glfw_window, mouse_button_callback);
 	glfwSetCursorPosCallback(window.glfw_window, cursor_position_callback);
 
-	i32 len = dyn_array_len(events);
+	i32 len = dyn_array_len(ctx->events);
 	if (len)
-		*event = dyn_array_pop(events, 0);
+		*event = dyn_array_pop(ctx->events, 0);
 	return len;
 }
 
