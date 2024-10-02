@@ -13,7 +13,6 @@ Trace_Allocator* trace_allocator_new() {
 	);
 	allocator->blocks_cnt = 0;
 	allocator->blocks_cap = TRACE_ALLOCATOR_MEMORY_CAP;
-	allocator->total_mem_size = 0;
 
 	return allocator;
 }
@@ -64,7 +63,6 @@ void* __trace_allocator_alloc(Trace_Allocator* allocator, size_t size, const cha
 	memset(ptr, 0, size);
 
 	allocator->blocks[allocator->blocks_cnt++] = mem;
-	allocator->total_mem_size += size;
 	return ptr;
 }
 
@@ -76,7 +74,6 @@ void trace_allocator_free(Trace_Allocator* allocator, void* ptr) {
 				(allocator->blocks_cnt - i - 1) * sizeof(Traceable_Memory_Block)
 			);
 			allocator->blocks_cnt--;
-			allocator->total_mem_size -= allocator->blocks[i].size;
 
 			free(ptr);
 			break;
@@ -88,10 +85,12 @@ void trace_allocator_alert(Trace_Allocator* allocator) {
 	if (!allocator->blocks_cnt) return;
 
 	printf("\n---------Unfreed memories---------\n");
+	size_t total = 0;
 	for (u32 i = 0; i < allocator->blocks_cnt; i++) {
 		print_traceable_memory_block(&allocator->blocks[i]);
+		total += allocator->blocks[i].size;
 	}
 	printf("\nTotal unfreed memories count = %d\n", allocator->blocks_cnt);
-	printf("Total unfreed memories = %d bytes\n", allocator->total_mem_size);
+	printf("Total unfreed memories = %d bytes\n", total);
 	printf("---------Unfreed memories---------\n\n");
 }

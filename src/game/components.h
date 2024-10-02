@@ -6,11 +6,23 @@
 #include "graphics/texture.h"
 #include "math/rect.h"
 #include "math/vec.h"
+#include "math/mat.h"
 
 typedef struct {
 	v3 pos;
 	v2 size;
+	m4 rot;
 } TransformComponent;
+
+typedef enum {
+	M_NONE, M_LEFT, M_RIGHT
+} Dir;
+
+typedef struct {
+	Dir h_dir;
+	Dir look_dir;
+	f32 speed;
+} MovementComponent;
 
 typedef struct {
 	v4 color;

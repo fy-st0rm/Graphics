@@ -21,7 +21,6 @@ typedef struct {
 	Traceable_Memory_Block* blocks;
 	u32 blocks_cnt;
 	u32 blocks_cap;
-	size_t total_mem_size;
 } Trace_Allocator;
 
 Trace_Allocator* trace_allocator_new();

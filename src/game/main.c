@@ -8,7 +8,7 @@
 #include "config.h"
 
 typedef enum {
-	IDLE
+	IDLE, WALK
 } AnimationID;
 
 Entity player_init(ECS* ecs) {
@@ -16,6 +16,7 @@ Entity player_init(ECS* ecs) {
 	texture_bind(player_sprite);
 
 	Entity player = entity_new(ecs);
+
 	entity_add_component(
 		ecs, player, TransformComponent, {
 			(v3) {
@@ -23,9 +24,19 @@ Entity player_init(ECS* ecs) {
 				SURF_SIZE.y / 2 - PLAYER_SIZE.y / 2 - 10,
 				0
 			},
-			PLAYER_SIZE
+			PLAYER_SIZE,
+			rotate_y(0)
 		}
 	);
+
+	entity_add_component(
+		ecs, player, MovementComponent, {
+			M_NONE,
+			M_RIGHT,
+			1.5f
+		}
+	);
+
 	entity_add_component(
 		ecs, player, RenderComponent, {
 			(v4) { 1, 1, 1, 1 },
@@ -35,21 +46,46 @@ Entity player_init(ECS* ecs) {
 	);
 
 	Dyn_Array(Rect) idle_frames = NULL;
-	for (i32 i = 0; i < 14; i++) {
+	for (i32 i = 0; i < 8; i++) {
 		dyn_array_append(
 			idle_frames,
-			(Rect) { (f32)i / PLAYER_SPRITE_X_CNT, 0, 1.0f / PLAYER_SPRITE_X_CNT, 1.0f / PLAYER_SPRITE_Y_CNT }
+			(Rect) {
+				(f32)i / PLAYER_SPRITE_X_CNT,
+				7.0f / PLAYER_SPRITE_Y_CNT,
+				1.0f / PLAYER_SPRITE_X_CNT,
+				1.0f / PLAYER_SPRITE_Y_CNT
+			}
+		);
+	}
+
+	Dyn_Array(Rect) walk_frames = NULL;
+	for (i32 i = 0; i < 8; i++) {
+		dyn_array_append(
+			walk_frames,
+			(Rect) {
+				(f32)i / PLAYER_SPRITE_X_CNT,
+				6.0f / PLAYER_SPRITE_Y_CNT,
+				1.0f / PLAYER_SPRITE_X_CNT,
+				1.0f / PLAYER_SPRITE_Y_CNT
+			}
 		);
 	}
 
 	AnimationEntry idle_entry = {
 		.id = IDLE,
 		.frames = (void*) idle_frames,
-		.duration= 100.0f * 14
+		.duration= 100.0f * 8
+	};
+
+	AnimationEntry walk_entry = {
+		.id = WALK,
+		.frames = (void*) walk_frames,
+		.duration= 100.0f * 8
 	};
 
 	Dyn_Array(AnimationEntry) entries = NULL;
 	dyn_array_append(entries, idle_entry);
+	dyn_array_append(entries, walk_entry);
 
 	entity_add_component(
 		ecs, player,
@@ -76,12 +112,13 @@ int main(int argc, char** argv) {
 
 	Entity player = player_init(ecs);
 
-	float speed = 1.0f;
+	float speed = 5.0f;
 	while (!window.should_close) {
 
 		// Event
 		{
 			TransformComponent* tc = entity_get_component(ecs, player, TransformComponent);
+			MovementComponent* mc = entity_get_component(ecs, player, MovementComponent);
 			Event event;
 			while(event_poll(window, &event)) {
 				if (event.type == KEYDOWN) {
@@ -93,24 +130,52 @@ int main(int argc, char** argv) {
 							ocamera_change_zoom(&camera, -0.1);
 							break;
 
-						case GLFW_KEY_W:
-							tc->pos = v3_add(tc->pos, (v3) { 0, speed, 0 });
-							//ocamera_change_pos(&camera, (v2) { 0, speed });
+						case GLFW_KEY_A: {
+							if (mc->look_dir == M_RIGHT) {
+								tc->rot = rotate_y(PI);
+							}
+							mc->h_dir = M_LEFT;
+							mc->look_dir = M_LEFT;
 							break;
+						}
+
+						case GLFW_KEY_D: {
+							if (mc->look_dir == M_LEFT) {
+								tc->rot = rotate_y(2 * PI);
+							}
+							mc->h_dir = M_RIGHT;
+							mc->look_dir = M_RIGHT;
+							break;
+						}
+					}
+				}
+				else if (event.type == KEYUP) {
+					switch (event.e.key) {
 						case GLFW_KEY_A:
-							tc->pos = v3_add(tc->pos, (v3) { -speed, 0, 0 });
-							//ocamera_change_pos(&camera, (v2) { -speed, 0 });
+							mc->h_dir = M_NONE;
 							break;
-						case GLFW_KEY_S:
-							tc->pos = v3_add(tc->pos, (v3) { 0, -speed, 0 });
-							// ocamera_change_pos(&camera, (v2) { 0, -speed });
-							break;
+
 						case GLFW_KEY_D:
-							tc->pos = v3_add(tc->pos, (v3) { speed, 0, 0 });
-							//ocamera_change_pos(&camera, (v2) { speed, 0 });
+							mc->h_dir = M_NONE;
 							break;
 					}
 				}
+			}
+		}
+
+		// Movement Update
+		{
+			TransformComponent* tc = entity_get_component(ecs, player, TransformComponent);
+			AnimationComponent* ac = entity_get_component(ecs, player, AnimationComponent);
+			MovementComponent* mc = entity_get_component(ecs, player, MovementComponent);
+			if (mc->h_dir == M_LEFT) {
+				tc->pos = v3_add(tc->pos, (v3) {-mc->speed, 0, 0});
+				ac_switch_frame(ac, WALK);
+			} else if (mc->h_dir == M_RIGHT) {
+				tc->pos = v3_add(tc->pos, (v3) {mc->speed, 0, 0});
+				ac_switch_frame(ac, WALK);
+			} else {
+				ac_switch_frame(ac, IDLE);
 			}
 		}
 

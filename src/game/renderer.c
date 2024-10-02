@@ -196,7 +196,7 @@ void renderer_color_pass(Renderer* ren, OCamera* camera, v4 color) {
 				tc->size,
 				comp->tex_coord,
 				comp->texture.id,
-				rotate_z(0),
+				tc->rot,
 				comp->color
 			);
 		});

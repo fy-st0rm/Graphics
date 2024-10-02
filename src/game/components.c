@@ -10,6 +10,11 @@ AnimationComponent make_animation_component(void* entries, i32 starting_state) {
 }
 
 void ac_switch_frame(AnimationComponent* ac, i32 id) {
+	if (id == ac->curr_state)
+		return;
+
+	ac->curr_state = id;
+	ac->start_time = glfwGetTime();
 }
 
 Rect ac_get_frame(AnimationComponent* ac) {
