@@ -45,18 +45,13 @@ typedef enum {
 } b32;
 
 /* @brief Macro to check if the variable is pointer or not. */
-#define __INTERNAL_CHECK_POINTER(x) _Generic((x),\
+#define IS_POINTER(x) _Generic((x),\
           int: 0,       unsigned int: 0,\
          long: 0,      unsigned long: 0,\
     long long: 0, unsigned long long: 0,\
         float: 0,             double: 0,\
   long double: 0,                       \
       default: 1)
-
-/*
- * @brief Determines whether the variable has likely a pointer type (but may be triggered false-positive)
- */
-#define IS_POINTER(x) ((sizeof(x) == sizeof(void*)) && __INTERNAL_CHECK_POINTER(x) ? 1 : 0)
 
 
 // Declaring all the results for basic types
